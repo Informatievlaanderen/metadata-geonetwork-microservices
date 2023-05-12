@@ -43,6 +43,7 @@ public class XsltResponseProcessorImpl extends AbstractResponseProcessor {
                   GnMediaType.APPLICATION_GN_XML_VALUE, "copy",
                   "gn", "copy",
                   GnMediaType.APPLICATION_DCAT2_XML_VALUE, "dcat",
+                  "dcat_ap_vl", "dcat",
                   "dcat", "dcat"
           );
 
