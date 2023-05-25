@@ -7,21 +7,26 @@ package org.fao.geonet.common.search.processor.impl;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.google.common.base.Throwables;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import javax.servlet.http.HttpSession;
 import javax.xml.stream.XMLStreamWriter;
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 import net.sf.saxon.s9api.Processor;
 import net.sf.saxon.s9api.Serializer;
 import net.sf.saxon.s9api.Serializer.Property;
+import org.dom4j.Element;
 import org.fao.geonet.common.search.GnMediaType;
 import org.fao.geonet.common.search.domain.UserInfo;
 import org.fao.geonet.common.xml.XsltUtil;
 import org.fao.geonet.domain.Metadata;
+import org.fao.geonet.index.model.dcat2.Namespaces;
 import org.fao.geonet.index.model.gn.IndexRecordFieldNames;
 import org.fao.geonet.repository.MetadataRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +34,7 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
 
 @Component("XsltResponseProcessorImpl")
+@Slf4j(topic = "org.fao.geonet.common.search.processor")
 public class XsltResponseProcessorImpl extends AbstractResponseProcessor {
 
   @Autowired
@@ -74,8 +80,27 @@ public class XsltResponseProcessorImpl extends AbstractResponseProcessor {
 
       List<Metadata> records = metadataRepository.findAllById(ids);
 
-      generator.writeStartElement("results");
-      generator.writeAttribute("total", records.size() + "");
+      generator.writeStartElement("rdf:RDF");
+      generator.writeNamespace("rdf", Namespaces.RDF_URI);
+      generator.writeNamespace("dcat", Namespaces.DCAT_URI);
+      generator.writeNamespace("dct", Namespaces.DCT_URI);
+      generator.writeNamespace("xml", "http://www.w3.org/XML/1998/namespace");
+
+      String xsltCatalogFileName = String.format(
+          "xslt/ogcapir/formats/%s/%s-catalog.xsl",
+          transformation, transformation);
+      try (InputStream xsltFile =
+          new ClassPathResource(xsltCatalogFileName).getInputStream()) {
+        XsltUtil.transformAndStreamInDocument(
+            "<root/>",
+            xsltFile,
+            generator
+        );
+      } catch (Exception e) {
+        Throwables.throwIfUnchecked(e);
+        throw new RuntimeException(e);
+      }
+
       {
         records.forEach(r -> {
           String xsltFileName = String.format(
@@ -83,17 +108,18 @@ public class XsltResponseProcessorImpl extends AbstractResponseProcessor {
               transformation, transformation, r.getDataInfo().getSchemaId());
           try (InputStream xsltFile =
               new ClassPathResource(xsltFileName).getInputStream()) {
-            //  if (!xsltFile.exists()) {
-            //    throw new IllegalArgumentException(String.format(
-            //        "Transformation '%s' does not exist for schema %s.", transformation
-            //    ));
-            //  }
-
             XsltUtil.transformAndStreamInDocument(
                 r.getData(),
                 xsltFile,
                 generator
             );
+          } catch (IOException e) {
+            // Question of ghost records when no conversion available for a schema
+            log.warn(String.format(
+                "XSL conversion not found (record %s is not part of the response). %s.",
+                r.getUuid(),
+                e.getMessage()
+            ));
           } catch (Exception e) {
             Throwables.throwIfUnchecked(e);
             throw new RuntimeException(e);
