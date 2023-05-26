@@ -103,8 +103,11 @@ public class XsltResponseProcessorImpl extends AbstractResponseProcessor {
 
       {
         records.forEach(r -> {
-          String xsltFileName = String.format(
-              "xslt/ogcapir/formats/%s/%s-%s.xsl",
+          String xsltFileName =
+              "xml".equals(transformation)
+                  ? "xslt/ogcapir/formats/xml/copy.xsl"
+                  : String.format(
+                      "xslt/ogcapir/formats/%s/%s-%s.xsl",
               transformation, transformation, r.getDataInfo().getSchemaId());
           try (InputStream xsltFile =
               new ClassPathResource(xsltFileName).getInputStream()) {
