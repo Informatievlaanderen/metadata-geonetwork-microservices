@@ -114,17 +114,11 @@
 
   <xsl:template name="ExtractLang" match="gmd:language">
     <xsl:param name="lang" as="node()?"/>
-    <xsl:choose>
-      <xsl:when test="$lang/gmd:LanguageCode/@codeListValue != ''">
-        <xsl:value-of select="translate($lang/gmd:LanguageCode/@codeListValue, $uppercase, $lowercase)"/>
-      </xsl:when>
-      <xsl:when test="$lang/gmd:LanguageCode != ''">
-        <xsl:value-of select="translate($lang/gmd:LanguageCode, $uppercase, $lowercase)"/>
-      </xsl:when>
-      <xsl:when test="$lang/gco:CharacterString != ''">
-        <xsl:value-of select="translate($lang/gco:CharacterString, $uppercase, $lowercase)"/>
-      </xsl:when>
-    </xsl:choose>
+    <xsl:value-of select="lower-case((
+                            $lang/gmd:LanguageCode/@codeListValue[. != '']|
+                            $lang/gmd:LanguageCode[. != '']/text()|
+                            $lang/gco:CharacterString[. != '']/text()
+                            )[1])"/>
   </xsl:template>
 
   <xsl:template name="Alpha3-to-Alpha2">
@@ -211,7 +205,7 @@
   <xsl:template name="Map-language">
     <xsl:param name="lang"/>
     <xsl:choose>
-      <xsl:when test="$lang = 'DUT'">
+      <xsl:when test="$lang = 'dut'">
         <skos:Concept rdf:about="http://publications.europa.eu/resource/authority/language/NLD">
           <rdf:type rdf:resource="http://purl.org/dc/terms/LinguisticSystem"/>
           <skos:prefLabel xml:lang="de">Niederländisch</skos:prefLabel>
@@ -221,7 +215,7 @@
           <skos:inScheme rdf:resource="http://publications.europa.eu/resource/authority/language"/>
         </skos:Concept>
       </xsl:when>
-      <xsl:when test="$lang = 'ENG'">
+      <xsl:when test="$lang = 'eng'">
         <skos:Concept rdf:about="http://publications.europa.eu/resource/authority/language/ENG">
           <rdf:type rdf:resource="http://purl.org/dc/terms/LinguisticSystem"/>
           <skos:prefLabel xml:lang="de">Englisch</skos:prefLabel>
@@ -231,7 +225,7 @@
           <skos:inScheme rdf:resource="http://publications.europa.eu/resource/authority/language"/>
         </skos:Concept>
       </xsl:when>
-      <xsl:when test="$lang = ('FRE', 'FRA')">
+      <xsl:when test="$lang = ('fre', 'fra')">
         <skos:Concept rdf:about="http://publications.europa.eu/resource/authority/language/FRA">
           <rdf:type rdf:resource="http://purl.org/dc/terms/LinguisticSystem"/>
           <skos:prefLabel xml:lang="de">Französisch</skos:prefLabel>
@@ -241,7 +235,7 @@
           <skos:inScheme rdf:resource="http://publications.europa.eu/resource/authority/language"/>
         </skos:Concept>
       </xsl:when>
-      <xsl:when test="$lang = 'GER'">
+      <xsl:when test="$lang = 'ger'">
         <skos:Concept rdf:about="http://publications.europa.eu/resource/authority/language/DEU">
           <rdf:type rdf:resource="http://purl.org/dc/terms/LinguisticSystem"/>
           <skos:prefLabel xml:lang="de">Deutsch</skos:prefLabel>
@@ -476,8 +470,8 @@
     <xsl:param name="uom"/>
     <xsl:variable name="concept">
       <xsl:choose>
-        <xsl:when test="$UnitMeasuresCodeCodelist/rdf:RDF/skos:Concept[translate(qudt:symbol, $uppercase, $lowercase) = translate($uom, $uppercase, $lowercase)]">
-          <xsl:copy-of select="$UnitMeasuresCodeCodelist/rdf:RDF/skos:Concept[translate(qudt:symbol, $uppercase, $lowercase) = translate($uom, $uppercase, $lowercase)]"/>
+        <xsl:when test="$UnitMeasuresCodeCodelist/rdf:RDF/skos:Concept[lower-case(qudt:symbol) = lower-case($uom)]">
+          <xsl:copy-of select="$UnitMeasuresCodeCodelist/rdf:RDF/skos:Concept[lower-case(qudt:symbol) = lower-case($uom)]"/>
         </xsl:when>
         <xsl:when test="$uom = ('mm', 'millimetre', 'millimetres')">
           <xsl:copy-of select="$UnitMeasuresCodeCodelist/rdf:RDF/skos:Concept[@rdf:about = 'http://qudt.org/vocab/unit/MilliM']"/>

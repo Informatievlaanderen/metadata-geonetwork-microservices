@@ -2,6 +2,8 @@
 <xsl:stylesheet xmlns:dct="http://purl.org/dc/terms/"
                 xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
                 xmlns:skos="http://www.w3.org/2004/02/skos/core#"
+                xmlns:dc="http://purl.org/dc/elements/1.1/"
+                xmlns:xs="http://www.w3.org/2001/XMLSchema"
                 xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
                 exclude-result-prefixes="#all"
                 version="2.0">
@@ -25,11 +27,81 @@
                 select="document('classpath:xslt/ogcapir/formats/dcat/thesauri-AIV/theme/ProgressCode.rdf')"/>
   <xsl:variable name="UnitMeasuresCodeCodelist" as="node()?"
                 select="document('classpath:xslt/ogcapir/formats/dcat/thesauri-AIV/theme/unitmeasures.rdf')"/>
+  <xsl:variable name="GDI-Vlaanderen-service-types" as="node()?"
+                select="document('classpath:xslt/ogcapir/formats/dcat/thesauri-AIV/theme/GDI-Vlaanderen-service-types.rdf')"/>
+  <xsl:variable name="GDI-Vlaanderen-trefwoorden" as="node()?"
+                select="document('classpath:xslt/ogcapir/formats/dcat/thesauri-AIV/theme/GDI-Vlaanderen-trefwoorden.rdf')"/>
+  <xsl:variable name="gemet" as="node()?"
+                select="document('classpath:xslt/ogcapir/formats/dcat/thesauri-AIV/theme/gemet.rdf')"/>
+<xsl:variable name="featureconcept" as="node()?"
+                select="document('classpath:xslt/ogcapir/formats/dcat/thesauri-AIV/theme/featureconcept.rdf')"/>
+<xsl:variable name="inspire-service-taxonomy" as="node()?"
+                select="document('classpath:xslt/ogcapir/formats/dcat/thesauri-AIV/theme/httpinspireeceuropaeumetadatacodelistSpatialDataServiceCategory-SpatialDataServiceCategory.rdf')"/>
+  <xsl:variable name="inspire-theme" as="node()?"
+                select="document('classpath:xslt/ogcapir/formats/dcat/thesauri-AIV/theme/httpinspireeceuropaeutheme-theme.rdf')"/>
+  <xsl:variable name="PriorityDataset" as="node()?"
+                select="document('classpath:xslt/ogcapir/formats/dcat/thesauri-AIV/theme/httpinspireeceuropaeumetadatacodelistPriorityDataset-PriorityDataset.rdf')"/>
+  <xsl:variable name="SpatialScope" as="node()?"
+                select="document('classpath:xslt/ogcapir/formats/dcat/thesauri-AIV/theme/httpinspireeceuropaeumetadatacodelistSpatialScope-SpatialScope.rdf')"/>
+  <xsl:variable name="GDI-Vlaanderenregios" as="node()?"
+                select="document('classpath:xslt/ogcapir/formats/dcat/thesauri-AIV/theme/GDI-Vlaanderenregions.rdf')"/>
 
 
-  <!-- Variables to be used to convert strings into lower/uppercase by using the translate() function. -->
-  <xsl:variable name="lowercase">abcdefghijklmnopqrstuvwxyz</xsl:variable>
-  <xsl:variable name="uppercase">ABCDEFGHIJKLMNOPQRSTUVWXYZ</xsl:variable>
+
+  <xsl:variable name="thesaurusList" as="node()*">
+    <xsl:copy-of select="$featureconcept"/>
+    <xsl:copy-of select="$GDI-Vlaanderen-service-types"/>
+    <xsl:copy-of select="$GDI-Vlaanderen-trefwoorden"/>
+    <xsl:copy-of select="$gemet"/>
+    <xsl:copy-of select="$inspire-service-taxonomy"/>
+    <xsl:copy-of select="$inspire-theme"/>
+    <xsl:copy-of select="$PriorityDataset"/>
+    <xsl:copy-of select="$SpatialScope"/>
+    <xsl:copy-of select="$GDI-Vlaanderenregios"/>
+  </xsl:variable>
+
+  <xsl:variable name="thesauri">
+    <xsl:for-each select="$thesaurusList">
+      <xsl:variable name="currentDoc" select="."/>
+      <thesausus>
+        <xsl:attribute name="title"
+                       select="string($currentDoc/rdf:RDF/skos:ConceptScheme/dc:title[1])"/>
+        <xsl:attribute name="about"
+                       select="string($currentDoc/rdf:RDF/skos:ConceptScheme/@rdf:about)"/>
+        <xsl:for-each select="$currentDoc/rdf:RDF//skos:Concept">
+          <xsl:copy copy-namespaces="no">
+            <xsl:copy-of select="@*"/>
+            <xsl:copy-of select="skos:prefLabel[@xml:lang = ('en','de','nl','fr')]"/>
+          </xsl:copy>
+        </xsl:for-each>
+        <xsl:for-each select="$currentDoc/rdf:RDF//rdf:Description">
+          <skos:Concept>
+            <xsl:copy-of select="@*"/>
+            <xsl:copy-of select="skos:prefLabel[@xml:lang = ('en','de','nl','fr')]"/>
+          </skos:Concept>
+        </xsl:for-each>
+      </thesausus>
+    </xsl:for-each>
+  </xsl:variable>
+
+  <xsl:template name="GetAboutFromCharacterString">
+    <xsl:param name="keyword" as="xs:string"/>
+    <xsl:param name="thesaurusIdentifier" as="xs:string"/>
+    <xsl:param name="lang" as="xs:string"/>
+
+    <xsl:message select="$thesaurusIdentifier"/>
+    <xsl:variable name="thesaurus"
+                  select="$thesauri/thesausus[@title = $thesaurusIdentifier or @about = $thesaurusIdentifier]"/>
+    <xsl:message select="$thesaurus"/>
+    <xsl:value-of
+      select="string($thesaurus/skos:Concept[skos:prefLabel[@xml:lang = $lang] = $keyword][1]/@rdf:about)"/>
+  </xsl:template>
+
+  <xsl:template name="GetSchemeFromThesaurusTitle">
+    <xsl:param name="thesaurusTitle" as="xs:string"/>
+    <xsl:value-of select="string($thesauri/thesausus[@title = $thesaurusTitle]/@about)"/>
+  </xsl:template>
+
 
   <!-- URIs, URNs and names for spatial reference system registers. -->
   <xsl:variable name="EpsgSrsBaseUri">http://www.opengis.net/def/crs/EPSG/0</xsl:variable>

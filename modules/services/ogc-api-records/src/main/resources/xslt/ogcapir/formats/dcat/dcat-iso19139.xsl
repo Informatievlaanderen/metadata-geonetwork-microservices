@@ -121,7 +121,7 @@
       <!-- Pick the first model license and map it to dct:license -->
       <xsl:variable name="modelLicences">
         <xsl:for-each select="$constraints[name() = 'gmx:Anchor']">
-          <xsl:variable name="currentUrl" select="translate(@xlink:href, $uppercase, $lowercase)"/>
+          <xsl:variable name="currentUrl" select="lower-case(@xlink:href)"/>
           <xsl:variable name="modelLicence"
                         select="$modelLicencieKeywords/license[count(urlKeyword[contains($currentUrl, .)]) > 0 and (not(scope) or count(scope[$ResourceType = .]) > 0)]/content/*"/>
           <xsl:if test="$modelLicence">
@@ -138,7 +138,7 @@
       <xsl:variable name="constraints" select="gmd:identificationInfo[1]/*/gmd:resourceConstraints/*[name() = ('gmd:MD_LegalConstraints', 'gmd:MD_SecurityConstraints')]/gmd:otherConstraints[../gmd:useConstraints or ../gmd:accessConstraints]/*|
                                                gmd:identificationInfo[1]/*/gmd:resourceConstraints/*[name() = ('gmd:MD_LegalConstraints', 'gmd:MD_SecurityConstraints')]/gmd:useLimitation[not(../gmd:useConstraints or ../gmd:accessConstraints)]/*"/>
       <xsl:for-each select="$constraints">
-        <xsl:variable name="currentUrl" select="translate(@xlink:href, $uppercase, $lowercase)"/>
+        <xsl:variable name="currentUrl" select="lower-case(@xlink:href)"/>
         <xsl:variable name="modelLicence"
                       select="$modelLicencieKeywords/license[count(urlKeyword[contains($currentUrl, .)]) > 0 and (not(scope) or count(scope[$ResourceType = .]) > 0)]/content/*"/>
         <xsl:if test="not($modelLicence)">
@@ -233,9 +233,10 @@
       <xsl:if test="$RecordLang != ''">
         <xsl:variable name="languageConcept">
           <xsl:call-template name="Map-language">
-            <xsl:with-param name="lang" select="translate($RecordLang, $lowercase, $uppercase)"/>
+            <xsl:with-param name="lang" select="lower-case($RecordLang)"/>
           </xsl:call-template>
         </xsl:variable>
+
         <xsl:choose>
           <xsl:when test="normalize-space($languageConcept) != ''">
             <dct:language>
@@ -244,7 +245,7 @@
           </xsl:when>
           <xsl:otherwise>
             <dct:language
-              rdf:resource="{geonet:escapeURI(concat($oplang, translate($RecordLang, $lowercase, $uppercase)))}"/>
+              rdf:resource="{geonet:escapeURI(concat($oplang, lower-case($RecordLang)))}"/>
           </xsl:otherwise>
         </xsl:choose>
       </xsl:if>
@@ -350,7 +351,7 @@
         <xsl:if test="normalize-space($resLang) != ''">
           <xsl:variable name="languageConcept">
             <xsl:call-template name="Map-language">
-              <xsl:with-param name="lang" select="translate($resLang, $lowercase, $uppercase)"/>
+              <xsl:with-param name="lang" select="lower-case($resLang)"/>
             </xsl:call-template>
           </xsl:variable>
           <xsl:choose>
@@ -361,7 +362,7 @@
             </xsl:when>
             <xsl:otherwise>
               <dct:language
-                rdf:resource="{geonet:escapeURI(concat($oplang, translate($RecordLang, $lowercase, $uppercase)))}"/>
+                rdf:resource="{geonet:escapeURI(concat($oplang, lower-case($RecordLang)))}"/>
             </xsl:otherwise>
           </xsl:choose>
         </xsl:if>
@@ -369,11 +370,11 @@
 
       <!-- Temporal extent -->
       <xsl:apply-templates
-        select="gmd:identificationInfo/*/gmd:extent/gmd:EX_Extent/gmd:temporalElement/gmd:EX_TemporalExtent"/>
+        select="gmd:identificationInfo/*/gmd:extent/*/gmd:temporalElement/*"/>
 
       <!-- Creation date, publication date, date of last revision -->
       <xsl:apply-templates
-        select="gmd:identificationInfo/*/gmd:citation/gmd:CI_Citation/gmd:date/gmd:CI_Date"/>
+        select="gmd:identificationInfo/*/gmd:citation/*/gmd:date/gmd:CI_Date"/>
 
       <!-- Conformity -->
       <xsl:apply-templates
@@ -692,7 +693,7 @@
                     <xsl:for-each select="$encoding/dct:format">
                       <dcat:distribution>
                         <dcat:Distribution>
-                          <xsl:variable name="distroUUID" select="geonet:uuidFromString(concat(
+                          <xsl:variable name="distroUUID" select="geonet:uuidFromString(normalize-space(concat(
                             $Title,
                             $Description,
                             string($linkage),
@@ -701,7 +702,7 @@
                             string(.),
                             string($Protocol),
                             string($Distributors)
-                          ))"/>
+                          )))"/>
                           <xsl:variable name="dURI"
                                         select="replace(replace($uriPattern, '\{resourceType\}', 'distributions'), '\{resourceUuid\}', $distroUUID)"/>
                           <xsl:if
@@ -2166,7 +2167,7 @@
       <xsl:variable name="langs">
         <xsl:call-template name="Alpha3-to-Alpha2">
           <xsl:with-param name="lang"
-                          select="translate(translate(@locale, $uppercase, $lowercase), '#', '')"/>
+                          select="translate(lower-case(@locale), '#', '')"/>
         </xsl:call-template>
       </xsl:variable>
       <xsl:if test="$value != ''">

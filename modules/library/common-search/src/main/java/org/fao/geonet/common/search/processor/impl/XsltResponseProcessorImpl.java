@@ -105,7 +105,7 @@ public class XsltResponseProcessorImpl extends AbstractResponseProcessor {
         Throwables.throwIfUnchecked(e);
         throw new RuntimeException(e);
       }
-      
+
       // FIXME: Here the xml:lang attributes are correct using System.out as output
       try (InputStream xsltFile =
           new ClassPathResource(xsltCatalogFileName).getInputStream()) {

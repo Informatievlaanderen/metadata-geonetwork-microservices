@@ -22,11 +22,12 @@
     <env>
       <system>
         <site>
-          <siteId>ABC</siteId>
-          <name>name</name>
-          <organization>organization</organization>
-          <organizationMail>organizationMail</organizationMail>
-          <organizationUrl>organizationUrl</organizationUrl>
+          <siteId>2a294fed-b38d-4c48-824f-098f9ec1d239</siteId>
+          <name>Metadatacenter (van Digitaal Vlaanderen)</name>
+          <organization>agentschap Digitaal
+            Vlaanderen</organization>
+          <organizationMail>digitaal.vlaanderen@vlaanderen.be</organizationMail>
+          <organizationUrl>https://metadata.vlaanderen.be/metadatacenter</organizationUrl>
         </site>
       </system>
     </env>
@@ -37,11 +38,11 @@
                 as="xs:string"/>
 
   <xsl:variable name="serviceUrl"
-                select="'http://abc'"
+                select="'https://metadata.vlaanderen.be/metadatacenter'"
                 as="xs:string"/>
 
   <xsl:variable name="resourcePrefix"
-                select="'http://abc'"
+                select="'https://metadata.vlaanderen.be/metadatacenter/srv/resources'"
                 as="xs:string"/>
 
   <xsl:template name="langId2toAuth">
@@ -58,9 +59,6 @@
 
   <xsl:template match="/">
     <dcat:Catalog rdf:about="{$resourcePrefix}/catalogs/{$env/system/site/siteId}">
-
-      <xsl:message select="('map:',serialize($recordsUuidAndType, map{'method':'adaptive'}))"/>
-
       <!-- A name given to the catalog. -->
       <!-- TODO
       No idea why the xml:lang attribute is not in the output
@@ -85,7 +83,7 @@
       <dct:publisher>
         <!-- Organization in charge of the catalogue defined in the administration > system configuration -->
         <foaf:Agent
-          rdf:about="{$resourcePrefix}/organizations/{encode-for-uri($env/system/site/organization)}">
+          rdf:about="{$resourcePrefix}/organizations/{encode-for-uri(normalize-space($env/system/site/organization))}">
           <foaf:name xml:lang="{$iso2letterLanguageCode}">
             <xsl:value-of select="$env/system/site/organization"/>
           </foaf:name>
