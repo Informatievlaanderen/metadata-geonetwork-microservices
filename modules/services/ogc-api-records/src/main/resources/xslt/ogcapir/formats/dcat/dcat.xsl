@@ -4,11 +4,5 @@
                 xmlns:gco="http://www.isotc211.org/2005/gco"
                 exclude-result-prefixes="#all"
                 version="3.0">
-  <xsl:include href="landingpage-iso19139.xsl"/>
-
-  <!-- Browse the tree here and add specific schema templates
-  to catch what should be displayed in that mode. -->
-  <xsl:template match="@*|node()" mode="landingpage">
-    <xsl:apply-templates mode="landingpage" select="*|@*"/>
-  </xsl:template>
+  <xsl:include href="classpath:xslt/ogcapir/formats/dcat/dcat-catalog.xsl"/>
 </xsl:stylesheet>

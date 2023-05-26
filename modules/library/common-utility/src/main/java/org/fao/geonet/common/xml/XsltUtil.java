@@ -11,6 +11,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.util.Map;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.util.JAXBResult;
@@ -21,6 +22,7 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.stream.StreamSource;
 import net.sf.saxon.s9api.Processor;
+import net.sf.saxon.s9api.QName;
 import net.sf.saxon.s9api.SaxonApiException;
 import net.sf.saxon.s9api.Xslt30Transformer;
 import net.sf.saxon.s9api.XsltCompiler;
@@ -70,13 +72,17 @@ public class XsltUtil {
   public static void transformAndStreamInDocument(
       String inputXmlString,
       InputStream xsltFile,
-      XMLStreamWriter streamWriter) {
+      XMLStreamWriter streamWriter,
+      Map<QName, net.sf.saxon.s9api.XdmValue> xslParameters) {
     try {
       Processor proc = new Processor(false);
       XsltCompiler compiler = proc.newXsltCompiler();
 
       XsltExecutable xsl = compiler.compile(new StreamSource(xsltFile));
       Xslt30Transformer transformer = xsl.load30();
+      if (xslParameters != null) {
+        transformer.setStylesheetParameters(xslParameters);
+      }
       transformer.transform(
           new StreamSource(new StringReader(inputXmlString)),
           new XmlStreamWriterDestinationInDocument(streamWriter));
@@ -91,6 +97,7 @@ public class XsltUtil {
   public static void transformXmlAsOutputStream(
       String inputXmlString,
       InputStream xsltFile,
+      Map<QName, net.sf.saxon.s9api.XdmValue> xslParameters,
       OutputStream outputStream) {
     try {
       Processor proc = new Processor(false);
@@ -98,6 +105,9 @@ public class XsltUtil {
 
       XsltExecutable xsl = compiler.compile(new StreamSource(xsltFile));
       Xslt30Transformer transformer = xsl.load30();
+      if (xslParameters != null) {
+        transformer.setStylesheetParameters(xslParameters);
+      }
       transformer.transform(
           new StreamSource(new StringReader(inputXmlString)),
           proc.newSerializer(outputStream));
@@ -111,6 +121,7 @@ public class XsltUtil {
    */
   public static String transformXmlAsString(
       String inputXmlString,
+      Map<QName, net.sf.saxon.s9api.XdmValue> xslParameters,
       InputStream xsltFile) {
     try {
       Processor proc = new Processor(false);
@@ -118,6 +129,9 @@ public class XsltUtil {
 
       XsltExecutable xsl = compiler.compile(new StreamSource(xsltFile));
       Xslt30Transformer transformer = xsl.load30();
+      if (xslParameters != null) {
+        transformer.setStylesheetParameters(xslParameters);
+      }
       StringWriter stringWriter = new StringWriter();
       transformer.transform(
           new StreamSource(new StringReader(inputXmlString)),

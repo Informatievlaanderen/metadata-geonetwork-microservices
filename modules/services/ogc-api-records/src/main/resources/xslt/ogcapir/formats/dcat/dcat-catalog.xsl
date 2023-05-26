@@ -9,11 +9,14 @@
   xmlns:dcat="http://www.w3.org/ns/dcat#"
   xmlns:dct="http://purl.org/dc/terms/"
   xmlns:xml="http://www.w3.org/XML/1998/namespace"
+  xmlns:map="http://www.w3.org/2005/xpath-functions/map"
   exclude-result-prefixes="#all"
   version="3.0">
 
   <xsl:output method="xml"
               encoding="utf-8"/>
+
+  <xsl:param name="recordsUuidAndType" as="map(xs:string, xs:string)"/>
 
   <xsl:variable name="env" as="node()">
     <env>
@@ -55,6 +58,8 @@
 
   <xsl:template match="/">
     <dcat:Catalog rdf:about="{$resourcePrefix}/catalogs/{$env/system/site/siteId}">
+
+      <xsl:message select="('map:',serialize($recordsUuidAndType, map{'method':'adaptive'}))"/>
 
       <!-- A name given to the catalog. -->
       <!-- TODO
@@ -162,6 +167,63 @@
           </xsl:if>
         </vcard:Organization>
       </dcat:contactPoint>
+
+
+      <xsl:for-each select="map:keys($recordsUuidAndType)">
+        <xsl:call-template name="record-reference"/>
+      </xsl:for-each>
     </dcat:Catalog>
+  </xsl:template>
+
+
+
+  <xsl:template name="record-reference">
+    <xsl:element name="{if (map:get($recordsUuidAndType, .) = 'dataset')
+                        then 'dcat:dataset'
+                        else if (map:get($recordsUuidAndType, .) = 'service')
+                        then 'dcat:service'
+                        else 'dcat:record'}">
+      <xsl:attribute name="rdf:resource">
+        <xsl:value-of select="."/>
+      </xsl:attribute>
+    </xsl:element>
+
+
+    <!--TODO
+    <xsl:variable name="ResourceType">
+      <xsl:choose>
+        <xsl:when test="$IsoScopeCode = 'dataset' or $IsoScopeCode = 'nonGeographicDataset'">
+          <xsl:text>dataset</xsl:text>
+        </xsl:when>
+        <xsl:otherwise>
+          <xsl:value-of select="$IsoScopeCode"/>
+        </xsl:otherwise>
+      </xsl:choose>
+    </xsl:variable>
+
+    <xsl:variable name="RecordUUID" select="string(gmd:fileIdentifier/gco:CharacterString)"/>
+
+    <xsl:variable name="uriPattern" select="geonet:getUriPattern($RecordUUID)"/>
+
+    <xsl:variable name="RecordURI">
+      <xsl:variable name="mURI"
+                    select="replace(replace($uriPattern, '\{resourceType\}', 'records'), '\{resourceUuid\}', $RecordUUID)"/>
+      <xsl:if
+        test="$mURI != '' and (starts-with($mURI, 'http://') or starts-with($mURI, 'https://'))">
+        <xsl:value-of select="geonet:escapeURI($mURI)"/>
+      </xsl:if>
+    </xsl:variable>
+
+    <xsl:variable name="ResourceUri" select="geonet:getResourceURI(., $ResourceType, $uriPattern)"/>
+
+    <xsl:if test="$RecordURI">
+      <dcat:record rdf:resource="{$RecordURI}"/>
+    </xsl:if>
+    <xsl:if test="$ResourceType = 'dataset' and $ResourceUri">
+      <dcat:dataset rdf:resource="{$ResourceUri}"/>
+    </xsl:if>
+    <xsl:if test="$ResourceType = 'service' and $ResourceUri">
+      <dcat:service rdf:resource="{$ResourceUri}"/>
+    </xsl:if>-->
   </xsl:template>
 </xsl:stylesheet>

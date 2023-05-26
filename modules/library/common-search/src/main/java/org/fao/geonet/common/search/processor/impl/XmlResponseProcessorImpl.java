@@ -71,8 +71,8 @@ public class XmlResponseProcessorImpl extends AbstractResponseProcessor {
             XsltUtil.transformAndStreamInDocument(
                 r.getData(),
                 xsltFile,
-                generator
-            );
+                generator,
+                null);
           } catch (IOException e) {
             // Question of ghost records when no conversion available for a schema
             log.warn(String.format(

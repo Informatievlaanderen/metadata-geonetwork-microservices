@@ -11,17 +11,19 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 import javax.servlet.http.HttpSession;
 import javax.xml.stream.XMLStreamWriter;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import net.sf.saxon.s9api.Processor;
+import net.sf.saxon.s9api.QName;
 import net.sf.saxon.s9api.Serializer;
 import net.sf.saxon.s9api.Serializer.Property;
-import org.dom4j.Element;
+import net.sf.saxon.s9api.XdmArray;
+import net.sf.saxon.s9api.XdmMap;
 import org.fao.geonet.common.search.GnMediaType;
 import org.fao.geonet.common.search.domain.UserInfo;
 import org.fao.geonet.common.xml.XsltUtil;
@@ -44,14 +46,14 @@ public class XsltResponseProcessorImpl extends AbstractResponseProcessor {
   private String transformation = "copy";
 
   static final Map<String, String>
-          ACCEPT_FORMATTERS =
-          Map.of(
-                  GnMediaType.APPLICATION_GN_XML_VALUE, "copy",
-                  "gn", "copy",
-                  GnMediaType.APPLICATION_DCAT2_XML_VALUE, "dcat",
-                  "dcat_ap_vl", "dcat",
-                  "dcat", "dcat"
-          );
+      ACCEPT_FORMATTERS =
+      Map.of(
+          GnMediaType.APPLICATION_GN_XML_VALUE, "copy",
+          "gn", "copy",
+          GnMediaType.APPLICATION_DCAT2_XML_VALUE, "dcat",
+          "dcat_ap_vl", "dcat",
+          "dcat", "dcat"
+      );
 
 
   /**
@@ -72,19 +74,21 @@ public class XsltResponseProcessorImpl extends AbstractResponseProcessor {
       JsonParser parser = parserForStream(streamFromServer);
 
       List<Integer> ids = new ArrayList<>();
+      Map<String, String> recordsUuidAndType = new HashMap<>();
       new ResponseParser().matchHits(parser, generator, doc -> {
         ids.add(doc
             .get(IndexRecordFieldNames.source)
             .get(IndexRecordFieldNames.id).asInt());
+        recordsUuidAndType.put(doc.get("_id").asText(),
+            doc
+                .get(IndexRecordFieldNames.source)
+                .get(IndexRecordFieldNames.resourceType).get(0).asText());
       }, false);
 
       List<Metadata> records = metadataRepository.findAllById(ids);
 
       generator.writeStartElement("rdf:RDF");
       generator.writeNamespace("rdf", Namespaces.RDF_URI);
-      generator.writeNamespace("dcat", Namespaces.DCAT_URI);
-      generator.writeNamespace("dct", Namespaces.DCT_URI);
-      generator.writeNamespace("xml", "http://www.w3.org/XML/1998/namespace");
 
       String xsltCatalogFileName = String.format(
           "xslt/ogcapir/formats/%s/%s-catalog.xsl",
@@ -94,8 +98,23 @@ public class XsltResponseProcessorImpl extends AbstractResponseProcessor {
         XsltUtil.transformAndStreamInDocument(
             "<root/>",
             xsltFile,
-            generator
-        );
+            generator,
+            Map.of(new QName("recordsUuidAndType"),
+                XdmMap.makeMap(recordsUuidAndType)));
+      } catch (Exception e) {
+        Throwables.throwIfUnchecked(e);
+        throw new RuntimeException(e);
+      }
+      
+      // FIXME: Here the xml:lang attributes are correct using System.out as output
+      try (InputStream xsltFile =
+          new ClassPathResource(xsltCatalogFileName).getInputStream()) {
+        XsltUtil.transformXmlAsOutputStream(
+            "<root/>",
+            xsltFile,
+            Map.of(new QName("recordsUuidAndType"),
+                XdmMap.makeMap(recordsUuidAndType)),
+            System.out);
       } catch (Exception e) {
         Throwables.throwIfUnchecked(e);
         throw new RuntimeException(e);
@@ -108,14 +127,14 @@ public class XsltResponseProcessorImpl extends AbstractResponseProcessor {
                   ? "xslt/ogcapir/formats/xml/copy.xsl"
                   : String.format(
                       "xslt/ogcapir/formats/%s/%s-%s.xsl",
-              transformation, transformation, r.getDataInfo().getSchemaId());
+                      transformation, transformation, r.getDataInfo().getSchemaId());
           try (InputStream xsltFile =
               new ClassPathResource(xsltFileName).getInputStream()) {
             XsltUtil.transformAndStreamInDocument(
                 r.getData(),
                 xsltFile,
-                generator
-            );
+                generator,
+                null);
           } catch (IOException e) {
             // Question of ghost records when no conversion available for a schema
             log.warn(String.format(
@@ -136,7 +155,9 @@ public class XsltResponseProcessorImpl extends AbstractResponseProcessor {
     generator.close();
   }
 
-  /**  affraid XsltResponseProcessorImpl is NOT reentrant.*/
+  /**
+   * affraid XsltResponseProcessorImpl is NOT reentrant.
+   */
   @Override
   public void setTransformation(String acceptHeader) {
     transformation = ACCEPT_FORMATTERS.get(acceptHeader);
