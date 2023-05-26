@@ -6,10 +6,26 @@
                 exclude-result-prefixes="#all"
                 version="2.0">
 
-  <!--
-    Global parameters
-    =======================
-  -->
+
+  <xsl:variable name="dataTheme" as="node()?"
+                select="document('classpath:xslt/ogcapir/formats/dcat/thesauri-AIV/theme/datatheme.rdf')"/>
+  <xsl:variable name="ProtocolCodelist" as="node()?"
+                select="document('classpath:xslt/ogcapir/formats/dcat/thesauri-AIV/theme/protocol.rdf')"/>
+  <xsl:variable name="MediaTypeCodelist" as="node()?"
+                select="document('classpath:xslt/ogcapir/formats/dcat/thesauri-AIV/theme/media-types.rdf')"/>
+  <xsl:variable name="FileTypeCodelist" as="node()?"
+                select="document('classpath:xslt/ogcapir/formats/dcat/thesauri-AIV/theme/file-type.rdf')"/>
+  <xsl:variable name="ServiceTypeCodelist" as="node()?"
+                select="document('classpath:xslt/ogcapir/formats/dcat/thesauri-AIV/theme/inspire-service-type.rdf')"/>
+  <xsl:variable name="TopicCategoryCodelist" as="node()?"
+                select="document('classpath:xslt/ogcapir/formats/dcat/thesauri-AIV/theme/TopicCategory.rdf')"/>
+  <xsl:variable name="ServiceCategoryCodelist" as="node()?"
+                select="document('classpath:xslt/ogcapir/formats/dcat/thesauri-AIV/theme/inspire-service-taxonomy.rdf')"/>
+  <xsl:variable name="ProgressCodeCodelist" as="node()?"
+                select="document('classpath:xslt/ogcapir/formats/dcat/thesauri-AIV/theme/ProgressCode.rdf')"/>
+  <xsl:variable name="UnitMeasuresCodeCodelist" as="node()?"
+                select="document('classpath:xslt/ogcapir/formats/dcat/thesauri-AIV/theme/unitmeasures.rdf')"/>
+
 
   <!-- Variables to be used to convert strings into lower/uppercase by using the translate() function. -->
   <xsl:variable name="lowercase">abcdefghijklmnopqrstuvwxyz</xsl:variable>

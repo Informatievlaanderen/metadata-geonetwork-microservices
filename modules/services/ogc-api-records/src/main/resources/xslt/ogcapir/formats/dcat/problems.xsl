@@ -1,35 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns:gco="http://www.isotc211.org/2005/gco"
-                xmlns:gmd="http://www.isotc211.org/2005/gmd"
-                xmlns:gmx="http://www.isotc211.org/2005/gmx"
-                xmlns:skos="http://www.w3.org/2004/02/skos/core#"
-                xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
-                xmlns:dc="http://purl.org/dc/elements/1.1/"
-                xmlns:dct="http://purl.org/dc/terms/"
-                xmlns:dcat="http://www.w3.org/ns/dcat#"
-                xmlns:mdcat="https://data.vlaanderen.be/ns/metadata-dcat#"
-                xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-                xmlns:qudt="http://qudt.org/schema/qudt/"
-                xmlns:sdmx-attribute="http://purl.org/linked-data/sdmx/2009/attribute#"
-                xmlns:geonet="http://www.fao.org/geonetwork"
-                xmlns:xslutil="java:org.fao.geonet.util.XslUtil"
-                xmlns:uuid="java:java.util.UUID"
-                xmlns:xs="http://www.w3.org/2001/XMLSchema"
-                exclude-result-prefixes="#all"
-                version="2.0">
-
-  <xsl:variable name="dataTheme"
-                as="node()?"/>
-<!--                select="document('../thesauri-AIV/theme/datatheme.rdf')"/>-->
-
-  <xsl:variable name="ProtocolCodelist" as="node()?"/> <!-- select="document('../thesauri-AIV/theme/protocol.rdf')"/>-->
-  <xsl:variable name="MediaTypeCodelist" as="node()?"/> <!-- select="document('../thesauri-AIV/theme/media-types.rdf')"/>-->
-  <xsl:variable name="FileTypeCodelist" as="node()?"/> <!-- select="document('../thesauri-AIV/theme/file-type.rdf')"/>-->
-  <xsl:variable name="ServiceTypeCodelist" as="node()?"/> <!-- select="document('../thesauri-AIV/theme/inspire-service-type.rdf')"/>-->
-  <xsl:variable name="TopicCategoryCodelist" as="node()?"/> <!-- select="document('../thesauri-AIV/theme/TopicCategory.rdf')"/>-->
-  <xsl:variable name="ServiceCategoryCodelist" as="node()?"/> <!-- select="document('../thesauri-AIV/theme/inspire-service-taxonomy.rdf')"/>-->
-  <xsl:variable name="ProgressCodeCodelist" as="node()?"/> <!-- select="document('../thesauri-AIV/theme/ProgressCode.rdf')"/>-->
-  <xsl:variable name="UnitMeasuresCodeCodelist" as="node()?"/> <!-- select="document('../thesauri-AIV/theme/unitmeasures.rdf')"/>-->
+<xsl:stylesheet
+  xmlns:skos="http://www.w3.org/2004/02/skos/core#"
+  xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+  xmlns:dc="http://purl.org/dc/elements/1.1/"
+  xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+  xmlns:geonet="http://www.fao.org/geonetwork"
+  xmlns:xs="http://www.w3.org/2001/XMLSchema"
+  exclude-result-prefixes="#all"
+  version="2.0">
 
   <!-- TODO: Comes from
   https://github.com/GIM-be/core-geonetwork/blob/clients/aiv/main/web/src/main/webapp/xslt/services/dcat/rdf.xsl#LL48C1-L49C1
@@ -38,7 +16,6 @@
     <env/>
   </xsl:variable>
   <xsl:variable name="resourcePrefix" select="$env/metadata/resourceIdentifierPrefix"/>
-
 
 
   <xsl:function name="geonet:getRelatedServices" as="node()?">
@@ -84,23 +61,25 @@
 
 
   <xsl:variable name="thesaurusList" as="node()?">
-    <!--<path><xsl:value-of select="'../thesauri-AIV/theme/featureconcept.rdf'"/></path>
-    <path><xsl:value-of select="'../thesauri-AIV/theme/GDI-Vlaanderen-service-types.rdf'"/></path>
-    <path><xsl:value-of select="'../thesauri-AIV/theme/GDI-Vlaanderen-trefwoorden.rdf'"/></path>
-    <path><xsl:value-of select="'../thesauri-AIV/theme/gemet.rdf'"/></path>
-    <path><xsl:value-of select="'../thesauri-AIV/theme/inspire-service-taxonomy.rdf'"/></path>
-    <path><xsl:value-of select="'../thesauri-AIV/theme/inspire-theme.rdf'"/></path>
-    <path><xsl:value-of select="'../thesauri-AIV/theme/PriorityDataset.rdf'"/></path>
-    <path><xsl:value-of select="'../thesauri-AIV/theme/SpatialScope.rdf'"/></path>
-    <path><xsl:value-of select="'../thesauri-AIV/place/GDI-Vlaanderenregios.rdf'"/></path>-->
+    <!--<path><xsl:value-of select="'classpath:xslt/ogcapir/formats/dcat/thesauri-AIV/theme/featureconcept.rdf'"/></path>
+    <path><xsl:value-of select="'classpath:xslt/ogcapir/formats/dcat/thesauri-AIV/theme/GDI-Vlaanderen-service-types.rdf'"/></path>
+    <path><xsl:value-of select="'classpath:xslt/ogcapir/formats/dcat/thesauri-AIV/theme/GDI-Vlaanderen-trefwoorden.rdf'"/></path>
+    <path><xsl:value-of select="'classpath:xslt/ogcapir/formats/dcat/thesauri-AIV/theme/gemet.rdf'"/></path>
+    <path><xsl:value-of select="'classpath:xslt/ogcapir/formats/dcat/thesauri-AIV/theme/inspire-service-taxonomy.rdf'"/></path>
+    <path><xsl:value-of select="'classpath:xslt/ogcapir/formats/dcat/thesauri-AIV/theme/inspire-theme.rdf'"/></path>
+    <path><xsl:value-of select="'classpath:xslt/ogcapir/formats/dcat/thesauri-AIV/theme/PriorityDataset.rdf'"/></path>
+    <path><xsl:value-of select="'classpath:xslt/ogcapir/formats/dcat/thesauri-AIV/theme/SpatialScope.rdf'"/></path>
+    <path><xsl:value-of select="'classpath:xslt/ogcapir/formats/dcat/thesauri-AIV/place/GDI-Vlaanderenregios.rdf'"/></path>-->
   </xsl:variable>
 
   <xsl:variable name="thesauri">
     <xsl:for-each select="$thesaurusList/path">
       <xsl:variable name="currentDoc" select="document(.)"/>
       <thesausus>
-        <xsl:attribute name="title" select="string($currentDoc/rdf:RDF/skos:ConceptScheme/dc:title[1])"/>
-        <xsl:attribute name="about" select="string($currentDoc/rdf:RDF/skos:ConceptScheme/@rdf:about)"/>
+        <xsl:attribute name="title"
+                       select="string($currentDoc/rdf:RDF/skos:ConceptScheme/dc:title[1])"/>
+        <xsl:attribute name="about"
+                       select="string($currentDoc/rdf:RDF/skos:ConceptScheme/@rdf:about)"/>
         <xsl:for-each select="$currentDoc/rdf:RDF//skos:Concept">
           <xsl:copy copy-namespaces="no">
             <xsl:copy-of select="@*"/>
@@ -121,8 +100,10 @@
     <xsl:param name="keyword" as="xs:string"/>
     <xsl:param name="thesaurusIdentifier" as="xs:string"/>
     <xsl:param name="lang" as="xs:string"/>
-    <xsl:variable name="thesaurus" select="$thesauri/thesausus[@title = $thesaurusIdentifier or @about = $thesaurusIdentifier]"/>
-    <xsl:value-of select="string($thesaurus/skos:Concept[skos:prefLabel[@xml:lang = $lang] = $keyword][1]/@rdf:about)"/>
+    <xsl:variable name="thesaurus"
+                  select="$thesauri/thesausus[@title = $thesaurusIdentifier or @about = $thesaurusIdentifier]"/>
+    <xsl:value-of
+      select="string($thesaurus/skos:Concept[skos:prefLabel[@xml:lang = $lang] = $keyword][1]/@rdf:about)"/>
   </xsl:template>
 
   <xsl:template name="GetSchemeFromThesaurusTitle">
