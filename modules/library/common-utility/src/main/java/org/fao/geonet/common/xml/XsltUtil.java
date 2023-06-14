@@ -121,8 +121,8 @@ public class XsltUtil {
    */
   public static String transformXmlAsString(
       String inputXmlString,
-      Map<QName, net.sf.saxon.s9api.XdmValue> xslParameters,
-      InputStream xsltFile) {
+      InputStream xsltFile,
+      Map<QName, net.sf.saxon.s9api.XdmValue> xslParameters) {
     try {
       Processor proc = new Processor(false);
       XsltCompiler compiler = proc.newXsltCompiler();

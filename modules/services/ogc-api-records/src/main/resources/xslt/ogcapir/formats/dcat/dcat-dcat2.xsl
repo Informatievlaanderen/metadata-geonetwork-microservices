@@ -5,6 +5,7 @@
   version="2.0">
 
   <xsl:output method="xml"
+              omit-xml-declaration="yes"
               encoding="utf-8"/>
 
   <xsl:template match="/">

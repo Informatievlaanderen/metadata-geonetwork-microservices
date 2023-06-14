@@ -27,16 +27,17 @@
                 version="2.0">
 
   <xsl:output method="xml"
+              omit-xml-declaration="yes"
               encoding="utf-8"/>
 
 
-  <xsl:include href="classpath:xslt/ogcapir/formats/dcat/problems.xsl"/>
+  <xsl:import href="classpath:xslt/ogcapir/formats/dcat/problems.xsl"/>
   <xsl:include href="classpath:xslt/ogcapir/formats/dcat/tpl-rdf-utils.xsl"/>
   <xsl:include href="classpath:xslt/ogcapir/formats/dcat/tpl-rdf-variables.xsl"/>
 
 
 
-  <xsl:template match="/gmd:MD_Metadata">
+  <xsl:template match="gmd:MD_Metadata" mode="dcat">
     <xsl:variable name="MetadataViewUrl"
                   select="concat($catalogUrl, '/catalog.search#/metadata/', gmd:fileIdentifier/gco:CharacterString)"/>
 

@@ -10,6 +10,7 @@ import com.google.common.base.Throwables;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -31,6 +32,8 @@ import org.fao.geonet.domain.Metadata;
 import org.fao.geonet.index.model.dcat2.Namespaces;
 import org.fao.geonet.index.model.gn.IndexRecordFieldNames;
 import org.fao.geonet.repository.MetadataRepository;
+import org.fao.geonet.utils.Xml;
+import org.jdom.Element;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
@@ -69,90 +72,110 @@ public class XsltResponseProcessorImpl extends AbstractResponseProcessor {
     s.setOutputStream(streamToClient);
     XMLStreamWriter generator = s.getXMLStreamWriter();
 
-    generator.writeStartDocument("UTF-8", "1.0");
-    {
-      JsonParser parser = parserForStream(streamFromServer);
+    JsonParser parser = parserForStream(streamFromServer);
 
-      List<Integer> ids = new ArrayList<>();
-      Map<String, String> recordsUuidAndType = new HashMap<>();
-      new ResponseParser().matchHits(parser, generator, doc -> {
-        ids.add(doc
-            .get(IndexRecordFieldNames.source)
-            .get(IndexRecordFieldNames.id).asInt());
-        recordsUuidAndType.put(doc.get("_id").asText(),
-            doc
-                .get(IndexRecordFieldNames.source)
-                .get(IndexRecordFieldNames.resourceType).get(0).asText());
-      }, false);
+    List<Integer> ids = new ArrayList<>();
+    Map<String, String> recordsUuidAndType = new HashMap<>();
+    new ResponseParser().matchHits(parser, generator, doc -> {
+      ids.add(doc
+          .get(IndexRecordFieldNames.source)
+          .get(IndexRecordFieldNames.id).asInt());
+      recordsUuidAndType.put(doc.get("_id").asText(),
+          doc
+              .get(IndexRecordFieldNames.source)
+              .get(IndexRecordFieldNames.resourceType).get(0).asText());
+    }, false);
 
-      List<Metadata> records = metadataRepository.findAllById(ids);
+    List<Metadata> records = metadataRepository.findAllById(ids);
 
-      generator.writeStartElement("rdf:RDF");
-      generator.writeNamespace("rdf", Namespaces.RDF_URI);
+    boolean streamByRecord = false;
 
-      String xsltCatalogFileName = String.format(
-          "xslt/ogcapir/formats/%s/%s-catalog.xsl",
-          transformation, transformation);
+    if (streamByRecord) {
+      generator.writeStartDocument("UTF-8", "1.0");
+      {
+        generator.writeStartElement("rdf:RDF");
+        generator.writeNamespace("rdf", Namespaces.RDF_URI);
+
+        String xsltCatalogFileName = String.format(
+            "xslt/ogcapir/formats/%s/%s-catalog.xsl",
+            transformation, transformation);
+        try (InputStream xsltFile =
+            new ClassPathResource(xsltCatalogFileName).getInputStream()) {
+          XsltUtil.transformAndStreamInDocument(
+              "<root/>",
+              xsltFile,
+              generator,
+              Map.of(new QName("recordsUuidAndType"),
+                  XdmMap.makeMap(recordsUuidAndType)));
+        } catch (Exception e) {
+          Throwables.throwIfUnchecked(e);
+          throw new RuntimeException(e);
+        }
+
+        {
+          for (Metadata r : records) {
+            String xsltFileName =
+                "xml".equals(transformation)
+                    ? "xslt/ogcapir/formats/xml/copy.xsl"
+                    : String.format(
+                        "xslt/ogcapir/formats/%s/%s-%s.xsl",
+                        transformation, transformation, r.getDataInfo().getSchemaId());
+            try (InputStream xsltFile =
+                new ClassPathResource(xsltFileName).getInputStream()) {
+              XsltUtil.transformAndStreamInDocument(
+                  r.getData(),
+                  xsltFile,
+                  generator,
+                  null);
+            } catch (IOException e) {
+              // Question of ghost records when no conversion available for a schema
+              log.warn(String.format(
+                  "XSL conversion not found (record %s is not part of the response). %s.",
+                  r.getUuid(),
+                  e.getMessage()
+              ));
+            } catch (Exception e) {
+              Throwables.throwIfUnchecked(e);
+              throw new RuntimeException(e);
+            }
+          }
+        }
+        generator.writeEndElement();
+      }
+      generator.writeEndDocument();
+      generator.flush();
+      generator.close();
+    } else {
+      Element allRecords = new Element("records");
+      for (Metadata r : records) {
+        allRecords.addContent(r.getXmlData(false));
+      }
+
+      String xsltFileName =
+          "xml".equals(transformation)
+              ? "xslt/ogcapir/formats/xml/copy.xsl"
+              : String.format(
+                  "xslt/ogcapir/formats/%s/%s-catalog.xsl",
+                  transformation, transformation);
       try (InputStream xsltFile =
-          new ClassPathResource(xsltCatalogFileName).getInputStream()) {
-        XsltUtil.transformAndStreamInDocument(
-            "<root/>",
+          new ClassPathResource(xsltFileName).getInputStream()) {
+        String response = XsltUtil.transformXmlAsString(
+            Xml.getString(allRecords),
             xsltFile,
-            generator,
             Map.of(new QName("recordsUuidAndType"),
                 XdmMap.makeMap(recordsUuidAndType)));
+        streamToClient.write(response.getBytes(StandardCharsets.UTF_8));
+      } catch (IOException e) {
+        // Question of ghost records when no conversion available for a schema
+        log.warn(String.format(
+            "XSL conversion not found. %s.",
+            e.getMessage()
+        ));
       } catch (Exception e) {
         Throwables.throwIfUnchecked(e);
         throw new RuntimeException(e);
       }
-
-      // FIXME: Here the xml:lang attributes are correct using System.out as output
-      try (InputStream xsltFile =
-          new ClassPathResource(xsltCatalogFileName).getInputStream()) {
-        XsltUtil.transformXmlAsOutputStream(
-            "<root/>",
-            xsltFile,
-            Map.of(new QName("recordsUuidAndType"),
-                XdmMap.makeMap(recordsUuidAndType)),
-            System.out);
-      } catch (Exception e) {
-        Throwables.throwIfUnchecked(e);
-        throw new RuntimeException(e);
-      }
-
-      {
-        records.forEach(r -> {
-          String xsltFileName =
-              "xml".equals(transformation)
-                  ? "xslt/ogcapir/formats/xml/copy.xsl"
-                  : String.format(
-                      "xslt/ogcapir/formats/%s/%s-%s.xsl",
-                      transformation, transformation, r.getDataInfo().getSchemaId());
-          try (InputStream xsltFile =
-              new ClassPathResource(xsltFileName).getInputStream()) {
-            XsltUtil.transformAndStreamInDocument(
-                r.getData(),
-                xsltFile,
-                generator,
-                null);
-          } catch (IOException e) {
-            // Question of ghost records when no conversion available for a schema
-            log.warn(String.format(
-                "XSL conversion not found (record %s is not part of the response). %s.",
-                r.getUuid(),
-                e.getMessage()
-            ));
-          } catch (Exception e) {
-            Throwables.throwIfUnchecked(e);
-            throw new RuntimeException(e);
-          }
-        });
-      }
-      generator.writeEndElement();
     }
-    generator.writeEndDocument();
-    generator.flush();
-    generator.close();
   }
 
   /**

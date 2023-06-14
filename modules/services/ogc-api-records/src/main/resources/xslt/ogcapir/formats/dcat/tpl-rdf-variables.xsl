@@ -22,7 +22,9 @@
   <xsl:variable name="TopicCategoryCodelist" as="node()?"
                 select="document('classpath:xslt/ogcapir/formats/dcat/thesauri-AIV/theme/TopicCategory.rdf')"/>
   <xsl:variable name="ServiceCategoryCodelist" as="node()?"
-                select="document('classpath:xslt/ogcapir/formats/dcat/thesauri-AIV/theme/inspire-service-taxonomy.rdf')"/>
+                select="document('classpath:xslt/ogcapir/formats/dcat/thesauri-AIV/theme/httpinspireeceuropaeumetadatacodelistSpatialDataServiceCategory-SpatialDataServiceCategory.rdf')"/>
+  <xsl:variable name="inspire-service-taxonomy" as="node()?"
+                select="document('classpath:xslt/ogcapir/formats/dcat/thesauri-AIV/theme/httpinspireeceuropaeumetadatacodelistSpatialDataServiceCategory-SpatialDataServiceCategory.rdf')"/>
   <xsl:variable name="ProgressCodeCodelist" as="node()?"
                 select="document('classpath:xslt/ogcapir/formats/dcat/thesauri-AIV/theme/ProgressCode.rdf')"/>
   <xsl:variable name="UnitMeasuresCodeCodelist" as="node()?"
@@ -33,10 +35,8 @@
                 select="document('classpath:xslt/ogcapir/formats/dcat/thesauri-AIV/theme/GDI-Vlaanderen-trefwoorden.rdf')"/>
   <xsl:variable name="gemet" as="node()?"
                 select="document('classpath:xslt/ogcapir/formats/dcat/thesauri-AIV/theme/gemet.rdf')"/>
-<xsl:variable name="featureconcept" as="node()?"
+  <xsl:variable name="featureconcept" as="node()?"
                 select="document('classpath:xslt/ogcapir/formats/dcat/thesauri-AIV/theme/featureconcept.rdf')"/>
-<xsl:variable name="inspire-service-taxonomy" as="node()?"
-                select="document('classpath:xslt/ogcapir/formats/dcat/thesauri-AIV/theme/httpinspireeceuropaeumetadatacodelistSpatialDataServiceCategory-SpatialDataServiceCategory.rdf')"/>
   <xsl:variable name="inspire-theme" as="node()?"
                 select="document('classpath:xslt/ogcapir/formats/dcat/thesauri-AIV/theme/httpinspireeceuropaeutheme-theme.rdf')"/>
   <xsl:variable name="PriorityDataset" as="node()?"
