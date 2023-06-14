@@ -64,6 +64,6 @@
     return sm.getValue(Settings.SYSTEM_RESOURCE_PREFIX) + "/{resourceType}/{resourceUuid}";
      -->
     <xsl:value-of select="concat($resourcePrefix,
-                                  $string)"/>
+                                  '{resourceType}/{resourceUuid}')"/>
   </xsl:function>
 </xsl:stylesheet>

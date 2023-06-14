@@ -79,7 +79,9 @@
 
     <xsl:variable name="RecordURI">
       <xsl:variable name="mURI"
-                    select="replace(replace($uriPattern, '\{resourceType\}', 'records'), '\{resourceUuid\}', $RecordUUID)"/>
+                    select="replace(replace($uriPattern,
+                                '\{resourceType\}', 'records'),
+                                '\{resourceUuid\}', $RecordUUID)"/>
       <xsl:if
         test="$mURI != '' and (starts-with($mURI, 'http://') or starts-with($mURI, 'https://'))">
         <xsl:value-of select="geonet:escapeURI($mURI)"/>
@@ -88,6 +90,7 @@
 
     <xsl:variable name="ResourceUri"
                   select="geonet:getResourceURI(., $ResourceType, $uriPattern)"/>
+
 
     <xsl:variable name="ServiceType">
       <xsl:value-of select="gmd:identificationInfo/*/srv:serviceType/gco:LocalName"/>

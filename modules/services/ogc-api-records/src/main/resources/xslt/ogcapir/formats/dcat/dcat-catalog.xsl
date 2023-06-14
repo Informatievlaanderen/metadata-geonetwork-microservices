@@ -8,6 +8,7 @@
   xmlns:foaf="http://xmlns.com/foaf/0.1/"
   xmlns:dcat="http://www.w3.org/ns/dcat#"
   xmlns:dct="http://purl.org/dc/terms/"
+  xmlns:geonet="http://www.fao.org/geonetwork"
   xmlns:xml="http://www.w3.org/XML/1998/namespace"
   xmlns:map="http://www.w3.org/2005/xpath-functions/map"
   exclude-result-prefixes="#all"
@@ -45,7 +46,7 @@
                 as="xs:string"/>
 
   <xsl:variable name="resourcePrefix"
-                select="'https://metadata.vlaanderen.be/metadatacenter/srv/resources'"
+                select="'https://metadata.vlaanderen.be/metadatacenter/srv/resources/'"
                 as="xs:string"/>
 
   <xsl:template name="langId2toAuth">
@@ -62,7 +63,7 @@
 
   <xsl:template match="/">
     <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
-      <dcat:Catalog rdf:about="{$resourcePrefix}/catalogs/{$env/system/site/siteId}">
+      <dcat:Catalog rdf:about="{$resourcePrefix}catalogs/{$env/system/site/siteId}">
         <!-- A name given to the catalog. -->
         <!-- TODO
         No idea why the xml:lang attribute is not in the output
@@ -176,7 +177,6 @@
         </xsl:for-each>
       </dcat:Catalog>
   
-      <xsl:message><xsl:copy-of select="records"/></xsl:message>
       <xsl:apply-templates mode="dcat" select="records/*"/>
     </rdf:RDF>
   </xsl:template>
