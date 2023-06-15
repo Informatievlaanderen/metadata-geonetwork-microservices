@@ -38,7 +38,38 @@
 
 
 
-  <xsl:template match="gmd:MD_Metadata" mode="dcat">
+  <xsl:template match="catalogueDescriptionRecord/*:MD_Metadata"
+                mode="build-catalogue-description">
+    <xsl:variable name="metadataLanguage"
+                  select="gmd:language/*/@codeListValue"/>
+    <xsl:variable name="publisher"
+                  select="gmd:identificationInfo/*/gmd:pointOfContact[1]/*"/>
+
+    <catalogue>
+      <uuid><xsl:value-of select="gmd:fileIdentifier/*/text()"/></uuid>
+      <title xml:lang="{$metadataLanguage}">
+        <xsl:value-of select="gmd:identificationInfo/*/gmd:citation/*/gmd:title/*/text()"/>
+      </title>
+      <description xml:lang="{$metadataLanguage}">
+        <xsl:value-of select="gmd:identificationInfo/*/gmd:abstract"/>
+      </description>
+      <publisher xml:lang="{$metadataLanguage}"
+                 mail="{$publisher/gmd:contactInfo/*/gmd:address/*/gmd:electronicMailAddress/*/text()}"
+                 url="{$publisher/gmd:organisationName/*/@xlink:href}">
+        <xsl:value-of select="$publisher/gmd:organisationName/*/text()"/>
+      </publisher>
+      <url>
+        <!-- Supposing that the service metadata record is describing a CSW endpoint -->
+        <xsl:value-of select="replace(gmd:identificationInfo/*/srv:containsOperations[1]/*/
+                                srv:connectPoint/*/gmd:linkage/*/gmd:URL,
+                                '(.*)/srv/[a-z]{3}/csw.*', '$1')"/>
+      </url>
+    </catalogue>
+  </xsl:template>
+
+
+  <xsl:template match="gmd:MD_Metadata"
+                mode="dcat">
     <xsl:variable name="MetadataViewUrl"
                   select="concat($catalogUrl, '/catalog.search#/metadata/', gmd:fileIdentifier/gco:CharacterString)"/>
 

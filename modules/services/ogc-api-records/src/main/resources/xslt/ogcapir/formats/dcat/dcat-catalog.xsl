@@ -65,23 +65,16 @@
     </rdf:RDF>
   </xsl:template>
 
-  <xsl:template match="catalogueDescriptionRecord/*:MD_Metadata">
-
-    <xsl:if test="catalogueDescriptionRecord">
-      <xsl:message>=<xsl:copy-of select="catalogueDescriptionRecord"/></xsl:message>
-    </xsl:if>
-
-  </xsl:template>
 
   <xsl:template name="build-catalog">
     <xsl:variable name="description" as="node()">
-      <catalogue>
-        <xsl:choose>
-          <xsl:when test="false()"></xsl:when>
-          <!-- TODO <xsl:when test="catalogueDescriptionRecord/*">
-            <xsl:apply-templates select="catalogueDescriptionRecord/*" mode="build-catalogue-description"/>
-          </xsl:when>-->
-          <xsl:otherwise>
+      <xsl:choose>
+        <xsl:when test="catalogueDescriptionRecord/*">
+          <xsl:apply-templates select="catalogueDescriptionRecord/*"
+                               mode="build-catalogue-description"/>
+        </xsl:when>
+        <xsl:otherwise>
+          <catalogue>
             <uuid><xsl:value-of select="$env/system/site/siteId"/></uuid>
             <title xml:lang="{$iso2letterLanguageCode}">
               <xsl:value-of select="$env/system/site/name"/>
@@ -98,9 +91,9 @@
             <url>
               <xsl:value-of select="$env/system/site/url"/>
             </url>
-          </xsl:otherwise>
-        </xsl:choose>
-      </catalogue>
+          </catalogue>
+        </xsl:otherwise>
+      </xsl:choose>
     </xsl:variable>
 
     <dcat:Catalog rdf:about="{$resourcePrefix}catalogs/{$env/system/site/siteId}">
@@ -233,7 +226,6 @@
         <xsl:value-of select="."/>
       </xsl:attribute>
     </xsl:element>
-
 
     <!--TODO
     <xsl:variable name="ResourceType">

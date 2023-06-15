@@ -9,22 +9,9 @@
   exclude-result-prefixes="#all"
   version="3.0">
 
-  <!-- TODO: Comes from
-  https://github.com/GIM-be/core-geonetwork/blob/clients/aiv/main/web/src/main/webapp/xslt/services/dcat/rdf.xsl#LL48C1-L49C1
-  -->
-  <xsl:variable name="env" as="node()">
-    <env>
-      <metadata>
-        <resourceIdentifierPrefix>
-          https://metadata.vlaanderen.be/metadatacenter/srv/resources/records/
-        </resourceIdentifierPrefix>
-      </metadata>
-    </env>
-  </xsl:variable>
   <xsl:variable name="resourcePrefix"
                 select="normalize-space($env/metadata/resourceIdentifierPrefix)"/>
-
-
+  
   <xsl:function name="geonet:getRelatedServices" as="node()?">
     <xsl:param name="string" as="xs:string"/>
 
