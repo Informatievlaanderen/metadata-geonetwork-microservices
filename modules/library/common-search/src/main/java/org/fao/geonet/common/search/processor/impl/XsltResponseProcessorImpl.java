@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import javax.servlet.http.HttpSession;
 import javax.xml.stream.XMLStreamWriter;
 import lombok.Getter;
@@ -23,16 +24,17 @@ import net.sf.saxon.s9api.Processor;
 import net.sf.saxon.s9api.QName;
 import net.sf.saxon.s9api.Serializer;
 import net.sf.saxon.s9api.Serializer.Property;
-import net.sf.saxon.s9api.XdmArray;
 import net.sf.saxon.s9api.XdmMap;
 import org.fao.geonet.common.search.GnMediaType;
 import org.fao.geonet.common.search.domain.UserInfo;
 import org.fao.geonet.common.xml.XsltTransformerFactory;
 import org.fao.geonet.common.xml.XsltUtil;
 import org.fao.geonet.domain.Metadata;
+import org.fao.geonet.domain.Setting;
 import org.fao.geonet.index.model.dcat2.Namespaces;
 import org.fao.geonet.index.model.gn.IndexRecordFieldNames;
 import org.fao.geonet.repository.MetadataRepository;
+import org.fao.geonet.repository.SettingRepository;
 import org.fao.geonet.utils.Xml;
 import org.jdom.Element;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,6 +47,9 @@ public class XsltResponseProcessorImpl extends AbstractResponseProcessor {
 
   @Autowired
   MetadataRepository metadataRepository;
+
+  @Autowired
+  SettingRepository settingRepository;
 
   @Getter
   private String transformation = "copy";
@@ -59,6 +64,13 @@ public class XsltResponseProcessorImpl extends AbstractResponseProcessor {
           "dcat", "dcat"
       );
 
+
+  public static final String SYSTEM_CSW_CAPABILITY_RECORD_UUID = "system/csw/capabilityRecordUuid";
+
+  private Optional<Setting> getCatalogDescriptionRecord(String collection) {
+    // TODO: If in a collection search for the portal record
+    return settingRepository.findById(SYSTEM_CSW_CAPABILITY_RECORD_UUID);
+  }
 
   /**
    * Process the search response and return RSS feed.
@@ -90,6 +102,7 @@ public class XsltResponseProcessorImpl extends AbstractResponseProcessor {
     List<Metadata> records = metadataRepository.findAllById(ids);
 
     boolean streamByRecord = false;
+
 
     if (streamByRecord) {
       generator.writeStartDocument("UTF-8", "1.0");
@@ -147,10 +160,22 @@ public class XsltResponseProcessorImpl extends AbstractResponseProcessor {
       generator.flush();
       generator.close();
     } else {
+      Element root = new Element("root");
+      String collection = "main";
+      Optional<Setting> catalogueDescriptionRecordSetting =
+          getCatalogDescriptionRecord(collection);
+      if (catalogueDescriptionRecordSetting.isPresent()) {
+        Metadata serviceMetadata = metadataRepository.findOneByUuid(
+            catalogueDescriptionRecordSetting.get().getValue());
+        Element catalogueDescriptionRecord = new Element("catalogueDescriptionRecord");
+        catalogueDescriptionRecord.addContent(serviceMetadata.getXmlData(false));
+        root.addContent(catalogueDescriptionRecord);
+      }
       Element allRecords = new Element("records");
       for (Metadata r : records) {
         allRecords.addContent(r.getXmlData(false));
       }
+      root.addContent(allRecords);
 
       String xsltFileName =
           "xml".equals(transformation)
@@ -161,7 +186,7 @@ public class XsltResponseProcessorImpl extends AbstractResponseProcessor {
       try (InputStream xsltFile =
           new ClassPathResource(xsltFileName).getInputStream()) {
         String response = XsltUtil.transformXmlAsString(
-            Xml.getString(allRecords),
+            Xml.getString(root),
             xsltFile,
             Map.of(new QName("recordsUuidAndType"),
                 XdmMap.makeMap(recordsUuidAndType)));
