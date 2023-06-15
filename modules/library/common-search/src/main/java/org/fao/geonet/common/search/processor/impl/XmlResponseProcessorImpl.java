@@ -14,6 +14,7 @@ import net.sf.saxon.s9api.Processor;
 import net.sf.saxon.s9api.Serializer;
 import net.sf.saxon.s9api.Serializer.Property;
 import org.fao.geonet.common.search.domain.UserInfo;
+import org.fao.geonet.common.xml.XsltTransformerFactory;
 import org.fao.geonet.common.xml.XsltUtil;
 import org.fao.geonet.domain.Metadata;
 import org.fao.geonet.index.model.gn.IndexRecordFieldNames;
@@ -37,7 +38,7 @@ public class XmlResponseProcessorImpl extends AbstractResponseProcessor {
       InputStream streamFromServer, OutputStream streamToClient,
       UserInfo userInfo, String bucket, Boolean addPermissions) throws Exception {
 
-    Processor p = new Processor(false);
+    Processor p = XsltTransformerFactory.getProcessor();
     Serializer s = p.newSerializer();
     s.setOutputProperty(Property.INDENT, "no");
     s.setOutputStream(streamToClient);

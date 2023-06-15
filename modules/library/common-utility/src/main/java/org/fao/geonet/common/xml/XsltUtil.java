@@ -40,7 +40,7 @@ public class XsltUtil {
       File xsltFile,
       Class<T> objectClass
   ) {
-    TransformerFactory factory = new net.sf.saxon.TransformerFactoryImpl();
+    TransformerFactory factory = XsltTransformerFactory.get();
     StreamSource xslt = new StreamSource(xsltFile);
     StreamSource text = new StreamSource(new StringReader(inputXmlString));
     try {
@@ -75,7 +75,7 @@ public class XsltUtil {
       XMLStreamWriter streamWriter,
       Map<QName, net.sf.saxon.s9api.XdmValue> xslParameters) {
     try {
-      Processor proc = new Processor(false);
+      Processor proc = XsltTransformerFactory.getProcessor();
       XsltCompiler compiler = proc.newXsltCompiler();
 
       XsltExecutable xsl = compiler.compile(new StreamSource(xsltFile));
@@ -100,7 +100,7 @@ public class XsltUtil {
       Map<QName, net.sf.saxon.s9api.XdmValue> xslParameters,
       OutputStream outputStream) {
     try {
-      Processor proc = new Processor(false);
+      Processor proc = XsltTransformerFactory.getProcessor();
       XsltCompiler compiler = proc.newXsltCompiler();
 
       XsltExecutable xsl = compiler.compile(new StreamSource(xsltFile));
@@ -124,7 +124,7 @@ public class XsltUtil {
       InputStream xsltFile,
       Map<QName, net.sf.saxon.s9api.XdmValue> xslParameters) {
     try {
-      Processor proc = new Processor(false);
+      Processor proc = XsltTransformerFactory.getProcessor();
       XsltCompiler compiler = proc.newXsltCompiler();
 
       XsltExecutable xsl = compiler.compile(new StreamSource(xsltFile));
