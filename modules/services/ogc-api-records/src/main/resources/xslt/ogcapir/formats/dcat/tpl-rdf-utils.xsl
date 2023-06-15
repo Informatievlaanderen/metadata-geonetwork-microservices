@@ -11,11 +11,10 @@
                 xmlns:qudt="http://qudt.org/schema/qudt/"
                 xmlns:sdmx-attribute="http://purl.org/linked-data/sdmx/2009/attribute#"
                 xmlns:geonet="http://www.fao.org/geonetwork"
-                xmlns:xslutil="java:org.fao.geonet.util.XslUtil"
-                xmlns:uuid="java:java.util.UUID"
+                xmlns:gn-util="https://geonetwork-opensource.org/xsl-extension"
                 xmlns:xs="http://www.w3.org/2001/XMLSchema"
                 exclude-result-prefixes="#all"
-                version="2.0">
+                version="3.0">
 
 
   <xsl:template name="MapTopicCatToDataGovTheme">
@@ -565,7 +564,7 @@
         <xsl:value-of select="$resourceIdentifiers[matches(., $uuidRegex)][1]"/>
       </xsl:when>
       <xsl:otherwise>
-        <xsl:value-of select="geonet:uuidFromString($md/gmd:fileIdentifier/gco:CharacterString)"/>
+        <xsl:value-of select="gn-util:uuidFromString($md/gmd:fileIdentifier/gco:CharacterString)"/>
       </xsl:otherwise>
     </xsl:choose>
   </xsl:function>
@@ -588,7 +587,7 @@
         <!-- Else statement should never occur -->
         <xsl:value-of select="if (matches($normalizedUUID, concat('^', $uuidRegex, '$')))
                               then normalize-space($normalizedUUID)
-                              else geonet:uuidFromString($md/gmd:fileIdentifier/gco:CharacterString)"/>
+                              else gn-util:uuidFromString($md/gmd:fileIdentifier/gco:CharacterString)"/>
       </xsl:otherwise>
     </xsl:choose>
   </xsl:function>

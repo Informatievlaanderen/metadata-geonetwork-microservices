@@ -17,6 +17,7 @@
                 xmlns:vcard="http://www.w3.org/2006/vcard/ns#"
                 xmlns:xlink="http://www.w3.org/1999/xlink"
                 xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+                xmlns:gn-util="https://geonetwork-opensource.org/xsl-extension"
                 xmlns:geonet="http://www.fao.org/geonetwork"
                 xmlns:geodcat="http://data.europa.eu/930/"
                 xmlns:mdcat="https://data.vlaanderen.be/ns/metadata-dcat#"
@@ -24,7 +25,7 @@
                 xmlns:vlgen="https://data.vlaanderen.be/ns/generiek"
                 xmlns:dqv="http://www.w3.org/ns/dqv#"
                 exclude-result-prefixes="#all"
-                version="2.0">
+                version="3.0">
 
   <xsl:output method="xml"
               omit-xml-declaration="yes"
@@ -697,7 +698,7 @@
                     <xsl:for-each select="$encoding/dct:format">
                       <dcat:distribution>
                         <dcat:Distribution>
-                          <xsl:variable name="distroUUID" select="geonet:uuidFromString(normalize-space(concat(
+                          <xsl:variable name="distroUUID" select="gn-util:uuidFromString(normalize-space(concat(
                             $Title,
                             $Description,
                             string($linkage),

@@ -7,7 +7,7 @@
   xmlns:geonet="http://www.fao.org/geonetwork"
   xmlns:xs="http://www.w3.org/2001/XMLSchema"
   exclude-result-prefixes="#all"
-  version="2.0">
+  version="3.0">
 
   <!-- TODO: Comes from
   https://github.com/GIM-be/core-geonetwork/blob/clients/aiv/main/web/src/main/webapp/xslt/services/dcat/rdf.xsl#LL48C1-L49C1
@@ -37,14 +37,6 @@
 
     <!-- TODO:
         https://github.com/GIM-be/core-geonetwork/blob/clients/aiv/main/core/src/main/java/org/fao/geonet/util/XslUtil.java#L1089 -->
-  </xsl:function>
-
-  <xsl:function name="geonet:uuidFromString">
-    <xsl:param name="string" as="xs:string"/>
-
-    <!-- TODO:
-        return UUID.nameUUIDFromBytes(str.getBytes()).toString(); -->
-    <xsl:value-of select="$string"/>
   </xsl:function>
 
   <xsl:function name="geonet:getUriPattern">
