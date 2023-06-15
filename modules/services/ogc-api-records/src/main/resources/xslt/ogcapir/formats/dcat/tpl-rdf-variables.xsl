@@ -89,10 +89,8 @@
     <xsl:param name="thesaurusIdentifier" as="xs:string"/>
     <xsl:param name="lang" as="xs:string"/>
 
-    <xsl:message select="$thesaurusIdentifier"/>
     <xsl:variable name="thesaurus"
                   select="$thesauri/thesausus[@title = $thesaurusIdentifier or @about = $thesaurusIdentifier]"/>
-    <xsl:message select="$thesaurus"/>
     <xsl:value-of
       select="string($thesaurus/skos:Concept[skos:prefLabel[@xml:lang = $lang] = $keyword][1]/@rdf:about)"/>
   </xsl:template>

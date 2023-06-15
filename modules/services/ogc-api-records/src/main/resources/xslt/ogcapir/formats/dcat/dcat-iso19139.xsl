@@ -94,7 +94,7 @@
                           else $IsoScopeCode"/>
 
     <xsl:variable name="MetadataDate"
-                  select="geonet:formatRdfDate(gmd:dateStamp/*)"/>
+                  select="geonet:formatRdfDate(gmd:dateStamp/*[1])"/>
 
     <xsl:variable name="RecordUUID"
                   select="string(gmd:fileIdentifier/gco:CharacterString)"/>
