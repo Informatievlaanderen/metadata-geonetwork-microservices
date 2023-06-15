@@ -120,86 +120,39 @@
                             )[1])"/>
   </xsl:template>
 
-  <xsl:template name="Alpha3-to-Alpha2">
-    <xsl:param name="lang"/>
-    <xsl:choose>
-      <xsl:when test="$lang = 'bul'">
-        <xsl:text>bg</xsl:text>
-      </xsl:when>
-      <xsl:when test="$lang = 'cze'">
-        <xsl:text>cs</xsl:text>
-      </xsl:when>
-      <xsl:when test="$lang = 'dan'">
-        <xsl:text>da</xsl:text>
-      </xsl:when>
-      <xsl:when test="$lang = 'ger'">
-        <xsl:text>de</xsl:text>
-      </xsl:when>
-      <xsl:when test="$lang = 'gre'">
-        <xsl:text>el</xsl:text>
-      </xsl:when>
-      <xsl:when test="$lang = 'eng'">
-        <xsl:text>en</xsl:text>
-      </xsl:when>
-      <xsl:when test="$lang = 'spa'">
-        <xsl:text>es</xsl:text>
-      </xsl:when>
-      <xsl:when test="$lang = 'est'">
-        <xsl:text>et</xsl:text>
-      </xsl:when>
-      <xsl:when test="$lang = 'fin'">
-        <xsl:text>fi</xsl:text>
-      </xsl:when>
-      <xsl:when test="$lang = 'fre'">
-        <xsl:text>fr</xsl:text>
-      </xsl:when>
-      <xsl:when test="$lang = 'gle'">
-        <xsl:text>ga</xsl:text>
-      </xsl:when>
-      <xsl:when test="$lang = 'hrv'">
-        <xsl:text>hr</xsl:text>
-      </xsl:when>
-      <xsl:when test="$lang = 'ita'">
-        <xsl:text>it</xsl:text>
-      </xsl:when>
-      <xsl:when test="$lang = 'lav'">
-        <xsl:text>lv</xsl:text>
-      </xsl:when>
-      <xsl:when test="$lang = 'lit'">
-        <xsl:text>lt</xsl:text>
-      </xsl:when>
-      <xsl:when test="$lang = 'hun'">
-        <xsl:text>hu</xsl:text>
-      </xsl:when>
-      <xsl:when test="$lang = 'mlt'">
-        <xsl:text>mt</xsl:text>
-      </xsl:when>
-      <xsl:when test="$lang = 'dut'">
-        <xsl:text>nl</xsl:text>
-      </xsl:when>
-      <xsl:when test="$lang = 'pol'">
-        <xsl:text>pl</xsl:text>
-      </xsl:when>
-      <xsl:when test="$lang = 'por'">
-        <xsl:text>pt</xsl:text>
-      </xsl:when>
-      <xsl:when test="$lang = 'rum'">
-        <xsl:text>ru</xsl:text>
-      </xsl:when>
-      <xsl:when test="$lang = 'slo'">
-        <xsl:text>sk</xsl:text>
-      </xsl:when>
-      <xsl:when test="$lang = 'slv'">
-        <xsl:text>sl</xsl:text>
-      </xsl:when>
-      <xsl:when test="$lang = 'swe'">
-        <xsl:text>sv</xsl:text>
-      </xsl:when>
-      <xsl:otherwise>
-        <xsl:value-of select="$lang"/>
-      </xsl:otherwise>
-    </xsl:choose>
-  </xsl:template>
+  <xsl:variable name="languageCodes" as="node()*">
+    <language iso3="bul" iso2="bg"/>
+    <language iso3="cze" iso2="cs"/>
+    <language iso3="dan" iso2="da"/>
+    <language iso3="ger" iso2="de"/>
+    <language iso3="gre" iso2="el"/>
+    <language iso3="eng" iso2="en"/>
+    <language iso3="spa" iso2="es"/>
+    <language iso3="est" iso2="et"/>
+    <language iso3="fin" iso2="fi"/>
+    <language iso3="fre" iso2="fr"/>
+    <language iso3="gle" iso2="ga"/>
+    <language iso3="hrv" iso2="hr"/>
+    <language iso3="ita" iso2="it"/>
+    <language iso3="lav" iso2="lv"/>
+    <language iso3="lit" iso2="lt"/>
+    <language iso3="hun" iso2="hu"/>
+    <language iso3="mlt" iso2="mt"/>
+    <language iso3="dut" iso2="nl"/>
+    <language iso3="pol" iso2="pl"/>
+    <language iso3="por" iso2="pt"/>
+    <language iso3="rum" iso2="ru"/>
+    <language iso3="slo" iso2="sk"/>
+    <language iso3="slv" iso2="sl"/>
+    <language iso3="swe" iso2="sv"/>
+  </xsl:variable>
+
+  <xsl:function name="geonet:Alpha3-to-Alpha2" as="xs:string">
+    <xsl:param name="lang" as="xs:string"/>
+    <xsl:value-of select="if ($languageCodes[@iso3 = $lang])
+                          then $languageCodes[@iso3 = $lang]/@iso2
+                          else $lang"/>
+  </xsl:function>
 
   <xsl:template name="Map-language">
     <xsl:param name="lang"/>

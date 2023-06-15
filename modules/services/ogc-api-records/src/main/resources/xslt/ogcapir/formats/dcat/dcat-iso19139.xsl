@@ -41,7 +41,7 @@
   <xsl:template match="catalogueDescriptionRecord/*:MD_Metadata"
                 mode="build-catalogue-description">
     <xsl:variable name="metadataLanguage"
-                  select="gmd:language/*/@codeListValue"/>
+                  select="geonet:Alpha3-to-Alpha2(gmd:language/*/@codeListValue)"/>
     <xsl:variable name="publisher"
                   select="gmd:identificationInfo/*/gmd:pointOfContact[1]/*"/>
 
@@ -83,11 +83,7 @@
       </xsl:call-template>
     </xsl:variable>
 
-    <xsl:variable name="MetadataLanguage">
-      <xsl:call-template name="Alpha3-to-Alpha2">
-        <xsl:with-param name="lang" select="$RecordLang"/>
-      </xsl:call-template>
-    </xsl:variable>
+    <xsl:variable name="MetadataLanguage" select="geonet:Alpha3-to-Alpha2($RecordLang)"/>
 
     <xsl:variable name="IsoScopeCode"
                   select="normalize-space(gmd:hierarchyLevel/gmd:MD_ScopeCode/@codeListValue)"/>
@@ -2200,12 +2196,7 @@
     <xsl:param name="term"/>
     <xsl:for-each select="gmd:PT_FreeText/*/gmd:LocalisedCharacterString">
       <xsl:variable name="value" select="normalize-space(.)"/>
-      <xsl:variable name="langs">
-        <xsl:call-template name="Alpha3-to-Alpha2">
-          <xsl:with-param name="lang"
-                          select="translate(lower-case(@locale), '#', '')"/>
-        </xsl:call-template>
-      </xsl:variable>
+      <xsl:variable name="langs" select="geonet:Alpha3-to-Alpha2(translate(lower-case(@locale), '#', ''))"/>
       <xsl:if test="$value != ''">
         <xsl:element name="{$term}">
           <xsl:attribute name="xml:lang">

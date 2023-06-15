@@ -11,7 +11,7 @@
 
   <xsl:variable name="resourcePrefix"
                 select="normalize-space($env/metadata/resourceIdentifierPrefix)"/>
-  
+
   <xsl:function name="geonet:getRelatedServices" as="node()?">
     <xsl:param name="string" as="xs:string"/>
 
