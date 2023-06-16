@@ -21,6 +21,7 @@
   <xsl:param name="recordsUuidAndType" as="map(xs:string, xs:string)"/>
 
   <xsl:include href="classpath:xslt/ogcapir/formats/dcat/dcat-iso19139.xsl"/>
+  <xsl:include href="classpath:xslt/ogcapir/formats/dcat/dcat-dcat2-ap-vl.xsl"/>
 
   <xsl:variable name="env" as="node()">
     <env>
