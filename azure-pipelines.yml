@@ -68,13 +68,24 @@ jobs:
           goals: 'clean install'
           options: ' -Drelax '
       - task: Bash@3
-        displayName: List docker images
+        displayName: Retag docker image
         inputs:
           targetType: 'inline'
           script: |
             localimage=gn-cloud-ogc-api-records-service:$(MAIN_VERSION) 
-            remoteimage=premdacr.azurecr.io/metadata/geonetwork-microservices:$(VL_VERSION)
-            echo "localimage: $localimage"
-            echo "remoteimage: $remoteimage"
-            docker tag $localimage $remoteimage
-            docker push $remoteimage
+            remote=premdacr.azurecr.io/metadata/geonetwork-microservices
+            docker tag $localimage $remote:$(VL_VERSION)
+            docker tag $localimage $remote:develop
+            docker image ls
+      - task: Docker@2
+        displayName: Push to preprod container registry (premdacr)
+        inputs:
+          containerRegistry: 'premdacr'
+          repository: 'metadata/geonetwork-microservices'
+          command: 'buildAndPush'
+          Dockerfile: 'web/Dockerfile'
+          tags: |
+            latest
+            develop
+            $(GIT_COMMIT_SHA)
+            $(VL_VERSION)
