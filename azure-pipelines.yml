@@ -72,4 +72,9 @@ jobs:
         inputs:
           targetType: 'inline'
           script: |
-            docker image ls
+            localimage=gn-cloud-ogc-api-records-service:$(MAIN_VERSION) 
+            remoteimage=premdacr.azurecr.io/metadata/geonetwork-microservices:$(VL_VERSION)
+            echo "localimage: $localimage"
+            echo "remoteimage: $remoteimage"
+            docker tag $localimage $remoteimage
+            docker push $remoteimage
