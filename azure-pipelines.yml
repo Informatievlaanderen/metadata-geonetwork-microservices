@@ -82,8 +82,7 @@ jobs:
         inputs:
           containerRegistry: 'premdacr'
           repository: 'metadata/geonetwork-microservices'
-          command: 'buildAndPush'
-          Dockerfile: 'web/Dockerfile'
+          command: 'push'
           tags: |
             latest
             develop
