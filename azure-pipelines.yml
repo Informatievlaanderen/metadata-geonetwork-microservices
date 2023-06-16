@@ -73,7 +73,7 @@ jobs:
           targetType: 'inline'
           script: |
             localimage=gn-cloud-ogc-api-records-service:$(MAIN_VERSION) 
-            remote=premdacr.azurecr.io/metadata/geonetwork-microservices
+            remote=premdacr.azurecr.io/metadata/ogc-api-records-service
             docker tag $localimage $remote:$(VL_VERSION)
             docker tag $localimage $remote:develop
             docker image ls
@@ -81,7 +81,7 @@ jobs:
         displayName: Push to preprod container registry (premdacr)
         inputs:
           containerRegistry: 'premdacr'
-          repository: 'metadata/geonetwork-microservices'
+          repository: 'metadata/ogc-api-records-service'
           command: 'push'
           tags: |
             latest
