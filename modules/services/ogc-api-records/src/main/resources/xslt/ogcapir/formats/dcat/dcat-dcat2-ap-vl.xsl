@@ -6,6 +6,20 @@
   exclude-result-prefixes="#all"
   version="3.0">
 
+  <xsl:template match="dcat:record|dcat:dataset|dcat:service"
+                mode="dcat-record-reference">
+    <xsl:copy>
+      <xsl:copy-of select="*/@rdf:about"/>
+    </xsl:copy>
+  </xsl:template>
+
+  <xsl:template match="rdf:RDF[dcat:Catalog]|dcat:*"
+                mode="dcat-record-reference">
+    <xsl:apply-templates select="*"
+                         mode="dcat-record-reference"/>
+  </xsl:template>
+
+
   <xsl:template match="rdf:RDF[dcat:Catalog]"
                 mode="dcat"
                 priority="2">

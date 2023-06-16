@@ -95,16 +95,9 @@ public class XsltResponseProcessorImpl extends AbstractResponseProcessor {
     JsonParser parser = parserForStream(streamFromServer);
 
     List<Integer> ids = new ArrayList<>();
-    Map<String, String> recordsUuidAndType = new HashMap<>();
-    new ResponseParser().matchHits(parser, generator, doc -> {
-      ids.add(doc
-          .get(IndexRecordFieldNames.source)
-          .get(IndexRecordFieldNames.id).asInt());
-      recordsUuidAndType.put(doc.get("_id").asText(),
-          doc
-              .get(IndexRecordFieldNames.source)
-              .get(IndexRecordFieldNames.resourceType).get(0).asText());
-    }, false);
+    new ResponseParser().matchHits(parser, generator, doc -> ids.add(doc
+            .get(IndexRecordFieldNames.source)
+            .get(IndexRecordFieldNames.id).asInt()), false);
 
     List<Metadata> records = metadataRepository.findAllById(ids);
 
@@ -126,8 +119,7 @@ public class XsltResponseProcessorImpl extends AbstractResponseProcessor {
               "<root/>",
               xsltFile,
               generator,
-              Map.of(new QName("recordsUuidAndType"),
-                  XdmMap.makeMap(recordsUuidAndType)));
+              null);
         } catch (Exception e) {
           Throwables.throwIfUnchecked(e);
           throw new RuntimeException(e);
@@ -197,8 +189,7 @@ public class XsltResponseProcessorImpl extends AbstractResponseProcessor {
         String response = XsltUtil.transformXmlAsString(
             Xml.getString(root),
             xsltFile,
-            Map.of(new QName("recordsUuidAndType"),
-                XdmMap.makeMap(recordsUuidAndType)));
+            null);
         streamToClient.write(response.getBytes(StandardCharsets.UTF_8));
       } catch (IOException e) {
         // Question of ghost records when no conversion available for a schema
