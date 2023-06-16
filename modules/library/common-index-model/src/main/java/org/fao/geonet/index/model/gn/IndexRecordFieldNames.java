@@ -44,6 +44,7 @@ public class IndexRecordFieldNames {
   public static final String resourceLineage = "lineageObject";
   public static final String specificationConformance = "specificationConformance";
   public static final String resolutionScaleDenominator = "resolutionScaleDenominator";
+  public static final String resourceType = "resourceType";
 
   public class Codelists {
 

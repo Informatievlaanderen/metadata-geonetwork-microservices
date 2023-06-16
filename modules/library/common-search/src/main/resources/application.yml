@@ -97,6 +97,13 @@ gn:
         responseProcessor: JsonUserAndSelectionAwareResponseProcessorImpl
         operations :
           - item
+      -
+        name: dcat_ap_vl
+        mimeType: application/dcat2+xml
+        responseProcessor: XsltResponseProcessorImpl
+        operations :
+          - items
+          - item
 #      -
 #        name : iso19139
 #        mimeType : application/iso19139+xml

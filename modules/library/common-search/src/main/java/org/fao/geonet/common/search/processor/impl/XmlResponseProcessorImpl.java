@@ -2,16 +2,19 @@ package org.fao.geonet.common.search.processor.impl;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.google.common.base.Throwables;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import javax.servlet.http.HttpSession;
 import javax.xml.stream.XMLStreamWriter;
+import lombok.extern.slf4j.Slf4j;
 import net.sf.saxon.s9api.Processor;
 import net.sf.saxon.s9api.Serializer;
 import net.sf.saxon.s9api.Serializer.Property;
 import org.fao.geonet.common.search.domain.UserInfo;
+import org.fao.geonet.common.xml.XsltTransformerFactory;
 import org.fao.geonet.common.xml.XsltUtil;
 import org.fao.geonet.domain.Metadata;
 import org.fao.geonet.index.model.gn.IndexRecordFieldNames;
@@ -22,6 +25,7 @@ import org.springframework.stereotype.Component;
 
 
 @Component("XmlResponseProcessorImpl")
+@Slf4j(topic = "org.fao.geonet.common.search.processor")
 public class XmlResponseProcessorImpl extends AbstractResponseProcessor {
 
   @Autowired
@@ -34,13 +38,11 @@ public class XmlResponseProcessorImpl extends AbstractResponseProcessor {
       InputStream streamFromServer, OutputStream streamToClient,
       UserInfo userInfo, String bucket, Boolean addPermissions) throws Exception {
 
-    Processor p = new Processor(false);
+    Processor p = XsltTransformerFactory.getProcessor();
     Serializer s = p.newSerializer();
     s.setOutputProperty(Property.INDENT, "no");
     s.setOutputStream(streamToClient);
     XMLStreamWriter generator = s.getXMLStreamWriter();
-
-    String transformation = "copy";
 
     generator.writeStartDocument("UTF-8", "1.0");
     {
@@ -63,22 +65,22 @@ public class XmlResponseProcessorImpl extends AbstractResponseProcessor {
       generator.writeAttribute("returned", records.size() + "");
       {
         records.forEach(r -> {
-          String xsltFileName = String.format(
-              "xslt/ogcapir/formats/%s/%s-%s.xsl",
-              transformation, transformation, r.getDataInfo().getSchemaId(), transformation);
+          String xsltFileName =
+              "xslt/ogcapir/formats/xml/copy.xsl";
           try (InputStream xsltFile =
               new ClassPathResource(xsltFileName).getInputStream()) {
-            //  if (!xsltFile.exists()) {
-            //    throw new IllegalArgumentException(String.format(
-            //        "Transformation '%s' does not exist for schema %s.", transformation
-            //    ));
-            //  }
-
             XsltUtil.transformAndStreamInDocument(
                 r.getData(),
                 xsltFile,
-                generator
-            );
+                generator,
+                null);
+          } catch (IOException e) {
+            // Question of ghost records when no conversion available for a schema
+            log.warn(String.format(
+                    "XSL conversion not found (record %s is not part of the response). %s.",
+                    r.getUuid(),
+                    e.getMessage()
+                    ));
           } catch (Exception e) {
             Throwables.throwIfUnchecked(e);
             throw new RuntimeException(e);
