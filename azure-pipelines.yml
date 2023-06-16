@@ -22,6 +22,26 @@ jobs:
       - checkout: self
         displayName: Set up repository
         submodules: recursive # needed for submodules
+      - task: AzureCLI@2
+        displayName: Configure access to aks cluster
+        inputs:
+          azureSubscription: 'dvl-dev-infocat-ARM'
+          addSpnToEnvironment: true
+          scriptType: bash
+          scriptLocation: inlineScript
+          inlineScript: |
+            # download kubectl and kubelogin
+            sudo az aks install-cli --subscription ${{ variables.subscription }} --client-version latest --kubelogin-version latest --only-show-errors
+
+            # download ~/.kube/config file
+            az aks get-credentials --resource-group ${{ variables.clusterRg }} --name ${{ variables.clusterName }} --only-show-errors
+
+            # convert ~/.kube/config to a format compatible with kubelogin
+            kubelogin convert-kubeconfig --login spn
+
+            # create secure azure devops variables for later steps
+            echo "##vso[task.setvariable variable=spnId;isSecret=true]$servicePrincipalId"
+            echo "##vso[task.setvariable variable=spnSecret;isSecret=true]$servicePrincipalKey"
       - task: Bash@3
         displayName: Set git commit sha as env var
         inputs:
