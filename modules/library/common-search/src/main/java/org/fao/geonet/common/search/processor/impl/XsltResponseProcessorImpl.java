@@ -25,6 +25,7 @@ import net.sf.saxon.s9api.QName;
 import net.sf.saxon.s9api.Serializer;
 import net.sf.saxon.s9api.Serializer.Property;
 import net.sf.saxon.s9api.XdmMap;
+import org.apache.commons.lang.StringUtils;
 import org.fao.geonet.common.search.GnMediaType;
 import org.fao.geonet.common.search.domain.UserInfo;
 import org.fao.geonet.common.xml.XsltTransformerFactory;
@@ -67,9 +68,15 @@ public class XsltResponseProcessorImpl extends AbstractResponseProcessor {
 
   public static final String SYSTEM_CSW_CAPABILITY_RECORD_UUID = "system/csw/capabilityRecordUuid";
 
-  private Optional<Setting> getCatalogDescriptionRecord(String collection) {
+  private Optional<String> getCatalogDescriptionRecord(String collection) {
     // TODO: If in a collection search for the portal record
-    return settingRepository.findById(SYSTEM_CSW_CAPABILITY_RECORD_UUID);
+    Optional<Setting> optionalSetting =
+        settingRepository.findById(SYSTEM_CSW_CAPABILITY_RECORD_UUID);
+    return optionalSetting.isPresent()
+        && StringUtils.isNotEmpty(optionalSetting.get().getValue())
+        && !"-1".equals(optionalSetting.get().getValue())
+        ? Optional.of(optionalSetting.get().getValue())
+        : Optional.empty();
   }
 
   /**
@@ -162,14 +169,16 @@ public class XsltResponseProcessorImpl extends AbstractResponseProcessor {
     } else {
       Element root = new Element("root");
       String collection = "main";
-      Optional<Setting> catalogueDescriptionRecordSetting =
+      Optional<String> catalogueDescriptionRecordUuid =
           getCatalogDescriptionRecord(collection);
-      if (catalogueDescriptionRecordSetting.isPresent()) {
+      if (catalogueDescriptionRecordUuid.isPresent()) {
         Metadata serviceMetadata = metadataRepository.findOneByUuid(
-            catalogueDescriptionRecordSetting.get().getValue());
-        Element catalogueDescriptionRecord = new Element("catalogueDescriptionRecord");
-        catalogueDescriptionRecord.addContent(serviceMetadata.getXmlData(false));
-        root.addContent(catalogueDescriptionRecord);
+            catalogueDescriptionRecordUuid.get());
+        if (serviceMetadata != null) {
+          Element catalogueDescriptionRecord = new Element("catalogueDescriptionRecord");
+          catalogueDescriptionRecord.addContent(serviceMetadata.getXmlData(false));
+          root.addContent(catalogueDescriptionRecord);
+        }
       }
       Element allRecords = new Element("records");
       for (Metadata r : records) {
