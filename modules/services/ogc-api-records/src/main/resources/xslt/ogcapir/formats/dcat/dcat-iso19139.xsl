@@ -69,6 +69,48 @@
 
 
   <xsl:template match="gmd:MD_Metadata"
+                mode="dcat-record-reference">
+
+    <xsl:variable name="resourceType"
+                  select="gmd:hierarchyLevel/*/@codeListValue"/>
+    <xsl:variable name="ResourceType"
+                  select="if($resourceType = ('dataset', 'nonGeographicDataset', 'series'))
+                          then 'dataset'
+                          else $resourceType"/>
+
+    <xsl:variable name="RecordUUID"
+                  select="gmd:fileIdentifier/gco:CharacterString"/>
+
+    <xsl:variable name="uriPattern"
+                  select="geonet:getUriPattern($RecordUUID)"/>
+
+    <xsl:variable name="RecordURI">
+      <xsl:variable name="mURI"
+                    select="replace(replace($uriPattern, '\{resourceType\}', 'records'), '\{resourceUuid\}', $RecordUUID)"/>
+      <xsl:if
+        test="$mURI != ''
+              and (starts-with($mURI, 'http://')
+                   or starts-with($mURI, 'https://'))">
+        <xsl:value-of select="geonet:escapeURI($mURI)"/>
+      </xsl:if>
+    </xsl:variable>
+
+    <xsl:variable name="ResourceUri"
+                  select="geonet:getResourceURI(., $ResourceType, $uriPattern)"/>
+
+    <xsl:if test="$RecordURI">
+      <dcat:record rdf:resource="{$RecordURI}"/>
+    </xsl:if>
+    <xsl:if test="$ResourceType = 'dataset' and $ResourceUri">
+      <dcat:dataset rdf:resource="{$ResourceUri}"/>
+    </xsl:if>
+    <xsl:if test="$ResourceType = 'service' and $ResourceUri">
+      <dcat:service rdf:resource="{$ResourceUri}"/>
+    </xsl:if>
+  </xsl:template>
+
+
+  <xsl:template match="gmd:MD_Metadata"
                 mode="dcat">
     <xsl:variable name="MetadataViewUrl"
                   select="concat($catalogUrl, '/catalog.search#/metadata/', gmd:fileIdentifier/gco:CharacterString)"/>
