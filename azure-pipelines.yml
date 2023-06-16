@@ -90,3 +90,12 @@ jobs:
             $(VL_VERSION)
             develop
             latest
+      - task: Bash@3
+        displayName: Rolling restart of ogc-api-records-service
+        env:
+          AAD_SERVICE_PRINCIPAL_CLIENT_ID: $(spnId)
+          AAD_SERVICE_PRINCIPAL_CLIENT_SECRET: $(spnSecret)
+        inputs:
+          targetType: 'inline'
+          script: |
+            kubectl rollout restart -n dev deployment/ogc-api-records-service
