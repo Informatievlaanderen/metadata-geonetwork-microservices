@@ -10,7 +10,5 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Added DCAT-AP-NL support to ogc-api-records-service
 
 ## [1.0.0] - 2023-06-15
-- Introduced semver versioning
-
-## [0.0.0] - <2023-06-15
-TODO: document the modifications already done
+- [core] based on 4.2.5-SNAPSHOT, May 10
+- Introduced semver versioning for Flemish modifications
