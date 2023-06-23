@@ -132,6 +132,7 @@ public class ItemApiController {
           GnMediaType.APPLICATION_RDF_XML_VALUE,
           GnMediaType.APPLICATION_DCAT2_XML_VALUE,
           GnMediaType.TEXT_TURTLE_VALUE,
+          GnMediaType.APPLICATION_DCAT_AP_VL_XML_VALUE,
           GnMediaType.APPLICATION_GEOJSON_VALUE})
   @ResponseStatus(HttpStatus.OK)
   @ApiResponses(value = {
@@ -159,6 +160,7 @@ public class ItemApiController {
         ListUtils.union(MediaTypeUtil.defaultSupportedMediaTypes,
             MediaTypeUtil.ldSupportedMediaTypes);
     allowedMediaTypes.add(GnMediaType.APPLICATION_GEOJSON);
+    allowedMediaTypes.add(GnMediaType.APPLICATION_DCAT_AP_VL_XML);
 
     MediaType mediaType =
         mediaTypeUtil.calculatePriorityMediaTypeFromRequest(request, allowedMediaTypes);
@@ -378,21 +380,26 @@ public class ItemApiController {
       String queryResponse = proxy.searchAndGetResult(request.getSession(), request, query, null);
 
       Document queryResult = XmlUtil.parseXmlString(queryResponse);
-      String total = queryResult.getChildNodes().item(0).getAttributes().getNamedItem("total")
-          .getNodeValue();
+      boolean isCustomResponse = "rdf:RDF".equals(
+          queryResult.getChildNodes().item(0).getNodeName());
+      if (isCustomResponse) {
+        streamResult(response, queryResponse, MediaType.APPLICATION_XML_VALUE);
+      } else {
+        String total = queryResult.getChildNodes().item(0).getAttributes().getNamedItem("total")
+            .getNodeValue();
 
-      if (Integer.parseInt(total) == 0) {
-        throw new ResponseStatusException(HttpStatus.NOT_FOUND,
-            messages.getMessage(EXCEPTION_COLLECTION_ITEM_NOT_FOUND,
-                new String[]{recordId, collectionId},
-                request.getLocale()));
+        if (Integer.parseInt(total) == 0) {
+          throw new ResponseStatusException(HttpStatus.NOT_FOUND,
+              messages.getMessage(EXCEPTION_COLLECTION_ITEM_NOT_FOUND,
+                  new String[]{recordId, collectionId},
+                  request.getLocale()));
+        }
+
+        Node metadataResult = queryResult.getChildNodes().item(0).getFirstChild();
+
+        streamResult(response, XmlUtil.getNodeString(metadataResult),
+            MediaType.APPLICATION_XML_VALUE);
       }
-
-      Node metadataResult = queryResult.getChildNodes().item(0).getFirstChild();
-
-      streamResult(response, XmlUtil.getNodeString(metadataResult),
-          MediaType.APPLICATION_XML_VALUE);
-
       return ResponseEntity.ok().build();
     } catch (Exception ex) {
       log.error(String.format(

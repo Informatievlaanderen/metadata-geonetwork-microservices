@@ -15,6 +15,8 @@ public class GnMediaType extends MimeType {
     super(type);
   }
 
+  public static final MediaType APPLICATION_DCAT_AP_VL_XML;
+  public static final String APPLICATION_DCAT_AP_VL_XML_VALUE = "application/dcat_ap_vl+xml";
   public static final MediaType TEXT_TURTLE;
   public static final String TEXT_TURTLE_VALUE = "text/turtle";
 
@@ -55,5 +57,6 @@ public class GnMediaType extends MimeType {
     APPLICATION_GN_XML = new MediaType("application", "gn+xml");
     APPLICATION_JSON_LD = new MediaType("application", "ld+json");
     APPLICATION_GEOJSON = new MediaType("application", "geo+json");
+    APPLICATION_DCAT_AP_VL_XML = new MediaType("application", "dcat_ap_vl+xml");
   }
 }

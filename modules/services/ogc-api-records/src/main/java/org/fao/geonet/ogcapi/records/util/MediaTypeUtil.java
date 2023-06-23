@@ -45,7 +45,7 @@ public class MediaTypeUtil {
 
 
   public static final List<MediaType> xmlMediaTypes =
-      List.of(MediaType.APPLICATION_XML);
+      List.of(MediaType.APPLICATION_XML, GnMediaType.APPLICATION_DCAT_AP_VL_XML);
 
 
   public MediaType calculatePriorityMediaTypeFromRequest(HttpServletRequest request) {
