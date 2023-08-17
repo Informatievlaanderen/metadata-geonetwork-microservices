@@ -1,0 +1,26 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="OgcApiRecordApp" type="Application" factoryName="Application" nameIsGenerated="true">
+    <envs>
+      <env name="GN_BASEURL" value="http://localhost:8080/api" />
+      <env name="GN_INDEX_URL" value="http://localhost:9200" />
+      <env name="GN_LEGACY_URL" value="http://localhost:8080" />
+      <env name="SERVER_FORWARDHEADERSSTRATEGY" value="FRAMEWORK" />
+      <env name="SPRING_DATASOURCE_PASSWORD" value="geonetwork" />
+      <env name="SPRING_DATASOURCE_URL" value="jdbc:postgresql://localhost:5432/geonetwork" />
+      <env name="SPRING_DATASOURCE_USERNAME" value="geonetwork" />
+      <env name="SPRING_PROFILES_ACTIVE" value="standalone" />
+      <env name="SERVER_PORT" value="8081" />
+    </envs>
+    <option name="MAIN_CLASS_NAME" value="org.fao.geonet.ogcapi.records.OgcApiRecordApp" />
+    <module name="gn-cloud-ogc-api-records-service" />
+    <extension name="coverage">
+      <pattern>
+        <option name="PATTERN" value="org.fao.geonet.ogcapi.records.*" />
+        <option name="ENABLED" value="true" />
+      </pattern>
+    </extension>
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>
