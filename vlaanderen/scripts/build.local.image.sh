@@ -8,7 +8,7 @@ echo "vl version: $vl_version"
 # build a new docker image
 (
   cd ../..
-  mvn clean install -Drelax -P-docker
+  mvn clean install -Drelax -Pdocker
 )
 
 # retag the images with vl version
