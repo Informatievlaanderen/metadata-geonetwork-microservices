@@ -21,7 +21,6 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -374,7 +373,7 @@ public class ItemApiController {
     }
 
     try {
-      String collectionFilter = collectionService.retrieveCollectionFilter(source);
+      String collectionFilter = collectionService.retrieveCollectionFilter(source, true);
       String query = recordsEsQueryBuilder.buildQuerySingleRecord(recordId, collectionFilter, null);
 
       String queryResponse = proxy.searchAndGetResult(request.getSession(), request, query, null);
@@ -477,7 +476,7 @@ public class ItemApiController {
       HttpServletRequest request,
       Source source,
       String type) throws Exception {
-    String collectionFilter = collectionService.retrieveCollectionFilter(source);
+    String collectionFilter = collectionService.retrieveCollectionFilter(source, true);
     String query = recordsEsQueryBuilder.buildQuerySingleRecord(recordId, collectionFilter, null);
 
     String queryResponse = proxy.searchAndGetResult(request.getSession(), request, query, null);
@@ -539,7 +538,7 @@ public class ItemApiController {
       throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Unable to find collection");
     }
 
-    String collectionFilter = collectionService.retrieveCollectionFilter(source);
+    String collectionFilter = collectionService.retrieveCollectionFilter(source, false);
     String query = recordsEsQueryBuilder
         .buildQuery(q, externalids, bbox,
             startindex, limit, collectionFilter, sortby,
@@ -610,7 +609,7 @@ public class ItemApiController {
       throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Unable to find collection");
     }
 
-    String collectionFilter = collectionService.retrieveCollectionFilter(source);
+    String collectionFilter = collectionService.retrieveCollectionFilter(source, false);
     String query = recordsEsQueryBuilder
         .buildQuery(q, externalids, bbox, startindex, limit, collectionFilter, sortby, null);
     EsSearchResults results = new EsSearchResults();
