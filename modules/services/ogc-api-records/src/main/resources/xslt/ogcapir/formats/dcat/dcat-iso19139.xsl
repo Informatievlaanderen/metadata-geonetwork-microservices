@@ -674,12 +674,10 @@
           </xsl:for-each>
 
           <!-- Spatial representation type -->
-          <xsl:apply-templates
-            select="gmd:identificationInfo/*/gmd:spatialRepresentationType/gmd:MD_SpatialRepresentationTypeCode"/>
+          <xsl:apply-templates select="gmd:identificationInfo/*/gmd:spatialRepresentationType/gmd:MD_SpatialRepresentationTypeCode"/>
 
           <!-- Progress code -->
-          <xsl:apply-templates
-            select="gmd:identificationInfo/*/gmd:status/gmd:MD_ProgressCode[ends-with(@codeList,'#MD_ProgressCode')]"/>
+          <xsl:apply-templates select="gmd:identificationInfo/*/gmd:status/gmd:MD_ProgressCode"/>
 
           <!-- Distributions -->
           <xsl:for-each select="gmd:distributionInfo/gmd:MD_Distribution">
@@ -2219,10 +2217,8 @@
   </xsl:template>
 
   <!-- Progress code -->
-  <xsl:template name="ProgressCode"
-                match="gmd:status/gmd:MD_ProgressCode[ends-with(@codeList,'#MD_ProgressCode')]">
-    <xsl:variable name="scheme"
-                  select="'http://standards.iso.org/iso/19139/resources/gmxCodelists.xml#MD_ProgressCode'"/>
+  <xsl:template name="ProgressCode" match="gmd:status/gmd:MD_ProgressCode[ends-with(@codeList,'#MD_ProgressCode')]">
+    <xsl:variable name="scheme" select="'http://standards.iso.org/iso/19139/resources/gmxCodelists.xml#MD_ProgressCode'"/>
     <xsl:variable name="uri" select="concat($scheme, '_', normalize-space(@codeListValue))"/>
     <xsl:variable name="concept" select="$ProgressCodeCodelist//skos:Concept[@rdf:about = $uri]"/>
 
