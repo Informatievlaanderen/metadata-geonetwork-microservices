@@ -6,13 +6,13 @@
 package org.fao.geonet.common.search.processor.impl;
 
 import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.base.Throwables;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -21,10 +21,8 @@ import javax.xml.stream.XMLStreamWriter;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import net.sf.saxon.s9api.Processor;
-import net.sf.saxon.s9api.QName;
 import net.sf.saxon.s9api.Serializer;
 import net.sf.saxon.s9api.Serializer.Property;
-import net.sf.saxon.s9api.XdmMap;
 import org.apache.commons.lang.StringUtils;
 import org.fao.geonet.common.search.GnMediaType;
 import org.fao.geonet.common.search.domain.UserInfo;
@@ -95,9 +93,17 @@ public class XsltResponseProcessorImpl extends AbstractResponseProcessor {
     JsonParser parser = parserForStream(streamFromServer);
 
     List<Integer> ids = new ArrayList<>();
-    new ResponseParser().matchHits(parser, generator, doc -> ids.add(doc
-            .get(IndexRecordFieldNames.source)
-            .get(IndexRecordFieldNames.id).asInt()), false);
+    var extras = new Element("extras");
+
+    new ResponseParser().matchHits(
+        parser,
+        generator,
+        doc -> {
+          ids.add(doc.get(IndexRecordFieldNames.source).get(IndexRecordFieldNames.id).asInt());
+          addExtraInformation(extras, doc);
+        },
+        false
+    );
 
     List<Metadata> records = metadataRepository.findAllById(ids);
 
@@ -176,6 +182,8 @@ public class XsltResponseProcessorImpl extends AbstractResponseProcessor {
       for (Metadata r : records) {
         allRecords.addContent(r.getXmlData(false));
       }
+
+      root.addContent(extras);
       root.addContent(allRecords);
 
       String xsltFileName =
@@ -210,5 +218,26 @@ public class XsltResponseProcessorImpl extends AbstractResponseProcessor {
   @Override
   public void setTransformation(String acceptHeader) {
     transformation = ACCEPT_FORMATTERS.get(acceptHeader);
+  }
+
+  private void addExtraInformation(Element extras, ObjectNode doc) {
+    var uuid = doc.get(IndexRecordFieldNames.source).get(IndexRecordFieldNames.uuid).asText();
+
+    var extra = new Element("extra");
+    extra.setAttribute("uuid", uuid);
+
+    var rdfURI = new Element("rdfResourceURI");
+    rdfURI.setText(doc.get(IndexRecordFieldNames.source).get(IndexRecordFieldNames.rdfResourceIdentifier).asText());
+    extra.addContent(rdfURI);
+
+    var uriPattern = new Element("uriPattern");
+    uriPattern.setText(doc.get(IndexRecordFieldNames.source).get(IndexRecordFieldNames.uriPattern).asText());
+    extra.addContent(uriPattern);
+
+    var relations = new Element("relations");
+    // TODO
+    extra.addContent(relations);
+
+    extras.addContent(extra);
   }
 }

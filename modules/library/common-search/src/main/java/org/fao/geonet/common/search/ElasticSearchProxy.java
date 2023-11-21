@@ -130,6 +130,11 @@ public class ElasticSearchProxy {
   @Value("${gn.index.url}")
   String serverUrl;
 
+  @Getter
+  @Setter
+  @Value("${gn.legacy.url}")
+  private String legacyUrl;
+
   /**
    * Process the ES request adding additional filters for privileges, etc. and returns the ES
    * response.
@@ -196,7 +201,7 @@ public class ElasticSearchProxy {
     String requestBody = processSearchQuery(body, selectionBucket, userInfo);
 
     return handleRequestAndGetResult(
-        httpSession, request, requestBody, userInfo, true, selectionBucket);
+        httpSession, request, requestBody, userInfo, true, selectionBucket, true);
 
   }
 
@@ -396,9 +401,12 @@ public class ElasticSearchProxy {
       String requestBody,
       UserInfo userInfo,
       boolean addPermissions,
-      String selectionBucket) throws Exception {
+      String selectionBucket,
+      boolean withRelation) throws Exception {
 
-    String esUrl = getSearchUrl();
+    String esUrl = withRelation ?
+        getRelationSearchUrl():
+        getSearchUrl();
     try {
       URL url = new URL(esUrl);
 
@@ -515,7 +523,7 @@ public class ElasticSearchProxy {
       String selectionBucket) throws Exception {
 
     String resultAsJson = handleRequestAndGetResult(httpSession, request, requestBody,
-        userInfo, addPermissions, selectionBucket);
+        userInfo, addPermissions, selectionBucket, true);
 
     ObjectMapper objectMapper = new ObjectMapper();
     JsonFactory factory = objectMapper.getFactory();
@@ -667,6 +675,10 @@ public class ElasticSearchProxy {
 
   private String getSearchUrl() {
     return serverUrl + "/" + defaultIndex + "/_search?";
+  }
+
+  private String getRelationSearchUrl() {
+    return legacyUrl + "/srv/api/search/records/_search?relatedType=services&relatedType=datasets";
   }
 
   private UserInfo getUserInfo() {
