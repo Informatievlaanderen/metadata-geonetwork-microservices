@@ -225,18 +225,27 @@ public class XsltResponseProcessorImpl extends AbstractResponseProcessor {
   }
 
   private void addExtraInformation(Element extras, ObjectNode doc) {
-    var uuid = doc.get(IndexRecordFieldNames.source).get(IndexRecordFieldNames.uuid).asText();
+    var source = doc.get(IndexRecordFieldNames.source);
+
+    if (source.get(IndexRecordFieldNames.uuid) == null) {
+      return;
+    }
+
+    var uuid = source.get(IndexRecordFieldNames.uuid).asText();
 
     var extra = new Element("extra");
     extra.setAttribute("uuid", uuid);
 
     var rdfURI = new Element("rdfResourceURI");
-    rdfURI.setText(doc.get(IndexRecordFieldNames.source).get(IndexRecordFieldNames.rdfResourceIdentifier).asText());
+    rdfURI.setText(source.get(IndexRecordFieldNames.rdfResourceIdentifier).asText());
     extra.addContent(rdfURI);
 
     var uriPattern = new Element("uriPattern");
-    uriPattern.setText(doc.get(IndexRecordFieldNames.source).get(IndexRecordFieldNames.uriPattern).asText());
-    extra.addContent(uriPattern);
+    var docUriPattern = source.get(IndexRecordFieldNames.uriPattern);
+    if (docUriPattern != null) {
+      uriPattern.setText(docUriPattern.asText());
+      extra.addContent(uriPattern);
+    }
 
     var relations = new Element("relations");
     var docDatasets = doc.get(IndexRecordFieldNames.related).get(IndexRecordFieldNames.datasets);
@@ -307,8 +316,16 @@ public class XsltResponseProcessorImpl extends AbstractResponseProcessor {
         link.addContent(protocol);
 
         var u = new Element("url");
-        u.setText(docLink.get(LinkField.url).get(CommonField.defaultText).asText());
-        link.addContent(u);
+        JsonNode uObj = null;
+        if (docLink.get(LinkField.url) != null) {
+          uObj = docLink.get(LinkField.url).get(CommonField.defaultText);
+        } else if (docLink.get("url") != null) {
+          uObj = docLink.get("url");
+        }
+        if (uObj != null) {
+          u.setText(uObj.asText());
+          link.addContent(u);
+        }
 
         rel.addContent(link);
       });

@@ -201,7 +201,7 @@ public class ElasticSearchProxy {
     String requestBody = processSearchQuery(body, selectionBucket, userInfo);
 
     return handleRequestAndGetResult(
-        httpSession, request, requestBody, userInfo, true, selectionBucket, true);
+        httpSession, request, requestBody, userInfo, true, selectionBucket);
 
   }
 
@@ -263,7 +263,7 @@ public class ElasticSearchProxy {
       boolean addPermissions,
       String selectionBucket) throws Exception {
 
-    String esUrl = getSearchUrl();
+    String esUrl = getRelationSearchUrl();
 
     try {
       URL url = new URL(esUrl);
@@ -401,12 +401,9 @@ public class ElasticSearchProxy {
       String requestBody,
       UserInfo userInfo,
       boolean addPermissions,
-      String selectionBucket,
-      boolean withRelation) throws Exception {
+      String selectionBucket) throws Exception {
 
-    String esUrl = withRelation ?
-        getRelationSearchUrl():
-        getSearchUrl();
+    String esUrl = getRelationSearchUrl();
     try {
       URL url = new URL(esUrl);
 
@@ -523,7 +520,7 @@ public class ElasticSearchProxy {
       String selectionBucket) throws Exception {
 
     String resultAsJson = handleRequestAndGetResult(httpSession, request, requestBody,
-        userInfo, addPermissions, selectionBucket, true);
+        userInfo, addPermissions, selectionBucket);
 
     ObjectMapper objectMapper = new ObjectMapper();
     JsonFactory factory = objectMapper.getFactory();

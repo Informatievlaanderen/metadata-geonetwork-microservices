@@ -68,11 +68,8 @@
 
 
   <xsl:template match="gmd:MD_Metadata" mode="dcat-record-reference">
-
     <xsl:variable name="recordUUID" select="gmd:fileIdentifier/gco:CharacterString"/>
     <xsl:variable name="mdExtra" select="$extras/extra[@uuid = $recordUUID]"/>
-    <xsl:message select="$mdExtra"/>
-
     <xsl:variable name="isoScopeCode" select="gmd:hierarchyLevel/*/@codeListValue"/>
     <xsl:variable name="resourceType"
                   select="if($isoScopeCode = ('dataset', 'nonGeographicDataset', 'series'))
