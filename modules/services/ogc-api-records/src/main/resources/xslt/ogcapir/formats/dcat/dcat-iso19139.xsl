@@ -72,7 +72,6 @@
 
     <xsl:variable name="recordUUID" select="gmd:fileIdentifier/gco:CharacterString"/>
     <xsl:variable name="mdExtra" select="$extras/extra[@uuid = $recordUUID]"/>
-    <xsl:message select="$mdExtra"/>
 
     <xsl:variable name="isoScopeCode" select="gmd:hierarchyLevel/*/@codeListValue"/>
     <xsl:variable name="resourceType"
@@ -112,7 +111,6 @@
     <xsl:variable name="metadataXmlUrl" select="concat(substring-before($resourcePrefix, '/resource'), '/api/records/', gmd:fileIdentifier/gco:CharacterString, '/formatters/xml')"/>
 
     <!-- Metadata language: corresponding Alpha-2 codes -->
-    
     <xsl:variable name="recordLang">
       <xsl:call-template name="ExtractLang">
         <xsl:with-param name="lang" select="gmd:language"/>
@@ -515,7 +513,7 @@
               <dcat:servesDataset>
                 <dcat:Dataset>
                   <xsl:if test="normalize-space(rdfResourceURI) != ''">
-                    <xsl:attribute name="rdf:about" select="rdfResourceURI"/>
+                    <xsl:attribute name="rdf:about" select="geonet:escapeURI(rdfResourceURI)"/>
                   </xsl:if>
                   <xsl:if test="normalize-space(resourceCode) != ''">
                     <dct:identifier>
@@ -527,8 +525,8 @@
                       <xsl:value-of select="title"/>
                     </dct:title>
                   </xsl:if>
-                  <xsl:if test="normalize-space(link) != ''">
-                    <dct:conformsTo rdf:resource="{link}"/>
+                  <xsl:if test="normalize-space(url) != ''">
+                    <dct:conformsTo rdf:resource="{geonet:escapeURI(url)}"/>
                   </xsl:if>
                 </dcat:Dataset>
               </dcat:servesDataset>
@@ -604,21 +602,13 @@
             select="gmd:identificationInfo/*/gmd:resourceMaintenance/gmd:MD_MaintenanceInformation/gmd:maintenanceAndUpdateFrequency/gmd:MD_MaintenanceFrequencyCode"/>
 
           <!-- Related services -->
-          <xsl:variable name="relatedServices">
-            <xsl:if test="$relationLookup">
-              <xsl:copy-of select="geonet:getRelatedServices($recordUUID)/services/*"/>
-            </xsl:if>
-          </xsl:variable>
-          <xsl:for-each select="$relatedServices/*">
-            <xsl:choose>
-              <xsl:when test="name() = 'gmd:MD_Metadata'">
-                <dct:relation rdf:resource="{geonet:getResourceURI(., 'service', $mdExtra/uriPattern)}"/>
-              </xsl:when>
-              <xsl:when test="name() = 'rdf:RDF'">
-                <dct:relation rdf:resource="{geonet:escapeURI(.//dcat:DataService[1]/@rdf:about)}"/>
-              </xsl:when>
-            </xsl:choose>
-          </xsl:for-each>
+          <xsl:if test="$relationLookup">
+            <xsl:for-each select="$mdExtra/relations/service">
+              <xsl:if test="normalize-space(rdfResourceURI) != ''">
+                <dct:relation rdf:resource="{geonet:escapeURI(rdfResourceURI)}"/>
+              </xsl:if>
+            </xsl:for-each>
+          </xsl:if>
 
           <!-- Spatial representation type -->
           <xsl:apply-templates select="gmd:identificationInfo/*/gmd:spatialRepresentationType/gmd:MD_SpatialRepresentationTypeCode"/>
@@ -769,14 +759,13 @@
                           </xsl:if>
 
                           <xsl:variable name="servedService">
-                            <xsl:for-each select="$relatedServices/*">
-                              <xsl:if
-                                test=".//gmd:onLine//gmd:linkage/gmd:URL[starts-with($linkage, tokenize(., '\?')[1])]">
+                            <xsl:for-each select="$mdExtra/relations/service">
+                              <xsl:if test="link/url[starts-with($linkage, tokenize(., '\?')[1])]">
                                 <resourceURI>
-                                  <xsl:value-of select="geonet:getResourceURI(., 'service', $mdExtra/uriPattern)"/>
+                                  <xsl:value-of select="geonet:escapeURI(rdfResourceURI)"/>
                                 </resourceURI>
                                 <uuid>
-                                  <xsl:value-of select="gmd:fileIdentifier/gco:CharacterString"/>
+                                  <xsl:value-of select="uuid"/>
                                 </uuid>
                               </xsl:if>
                             </xsl:for-each>
@@ -791,8 +780,7 @@
                             </xsl:when>
                             <xsl:when test="$servedService/resourceURI">
                               <dcat:accessService rdf:resource="{$servedService/resourceURI[1]}"/>
-                              <dct:rights
-                                rdf:resource="{concat($catalogUrl, '/catalog.search#/metadata/', $servedService/uuid[1], '/formatters/legalconstraints')}"/>
+                              <dct:rights rdf:resource="{concat($catalogUrl, '/catalog.search#/metadata/', $servedService/uuid[1], '/formatters/legalconstraints')}"/>
                             </xsl:when>
                             <xsl:otherwise>
                               <dct:rights>

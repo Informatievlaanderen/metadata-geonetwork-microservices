@@ -35,6 +35,7 @@ import org.fao.geonet.domain.Setting;
 import org.fao.geonet.index.model.dcat2.Namespaces;
 import org.fao.geonet.index.model.gn.IndexRecordFieldNames;
 import org.fao.geonet.index.model.gn.IndexRecordFieldNames.CommonField;
+import org.fao.geonet.index.model.gn.IndexRecordFieldNames.LinkField;
 import org.fao.geonet.repository.MetadataRepository;
 import org.fao.geonet.repository.SettingRepository;
 import org.fao.geonet.utils.Xml;
@@ -238,8 +239,14 @@ public class XsltResponseProcessorImpl extends AbstractResponseProcessor {
     extra.addContent(uriPattern);
 
     var relations = new Element("relations");
-    doc.get(IndexRecordFieldNames.related).get(IndexRecordFieldNames.datasets).forEach(relDataset -> addExtraRelation(relations, relDataset, "dataset"));
-    doc.get(IndexRecordFieldNames.related).get(IndexRecordFieldNames.services).forEach(relService -> addExtraRelation(relations, relService, "service"));
+    var docDatasets = doc.get(IndexRecordFieldNames.related).get(IndexRecordFieldNames.datasets);
+    if (docDatasets != null) {
+      docDatasets.forEach(relDataset -> addExtraRelation(relations, relDataset, "dataset"));
+    }
+    var docServices = doc.get(IndexRecordFieldNames.related).get(IndexRecordFieldNames.services);
+    if (docServices != null) {
+      docServices.forEach(relService -> addExtraRelation(relations, relService, "service"));
+    }
     extra.addContent(relations);
 
     extras.addContent(extra);
@@ -261,11 +268,11 @@ public class XsltResponseProcessorImpl extends AbstractResponseProcessor {
       rel.addContent(uuid);
     }
 
-    var docLink = doc.get("properties").get("url");
-    if (docLink != null) {
-      var link = new Element("link");
-      link.setText(docLink.asText());
-      rel.addContent(link);
+    var docURL = doc.get("properties").get("url");
+    if (docURL != null) {
+      var url = new Element("url");
+      url.setText(docURL.asText());
+      rel.addContent(url);
     }
 
     var docRdfURI = doc.get(IndexRecordFieldNames.source)
@@ -288,6 +295,23 @@ public class XsltResponseProcessorImpl extends AbstractResponseProcessor {
       var title = new Element("title");
       title.setText(docTitle.get(CommonField.defaultText).asText());
       rel.addContent(title);
+    }
+
+    var docLinks = doc.get(IndexRecordFieldNames.source).get(IndexRecordFieldNames.link);
+    if (docLinks instanceof ArrayNode && !docLinks.isEmpty()) {
+      docLinks.forEach(docLink -> {
+        var link = new Element("link");
+
+        var protocol = new Element("protocol");
+        protocol.setText(docLink.get(LinkField.protocol).asText());
+        link.addContent(protocol);
+
+        var u = new Element("url");
+        u.setText(docLink.get(LinkField.url).get(CommonField.defaultText).asText());
+        link.addContent(u);
+
+        rel.addContent(link);
+      });
     }
 
     relations.addContent(rel);

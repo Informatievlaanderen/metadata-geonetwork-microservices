@@ -72,6 +72,7 @@ public class IndexRecordFieldNames {
 
   public class LinkField {
     public static final String url = "urlObject";
+    public static final String protocol = "protocol";
     public static final String name = "nameObject";
     public static final String description = "descriptionObject";
   }
