@@ -36,7 +36,7 @@
   <xsl:include href="classpath:xslt/ogcapir/formats/dcat/tpl-rdf-utils.xsl"/>
   <xsl:include href="classpath:xslt/ogcapir/formats/dcat/tpl-rdf-variables.xsl"/>
 
-
+  <xsl:variable name="extras" select="/root/extras"/>
 
   <xsl:template match="catalogueDescriptionRecord/*:MD_Metadata"
                 mode="build-catalogue-description">
@@ -70,6 +70,8 @@
 
   <xsl:template match="gmd:MD_Metadata" mode="dcat-record-reference">
 
+    <xsl:variable name="recordUUID" select="gmd:fileIdentifier/gco:CharacterString"/>
+    <xsl:variable name="mdExtra" select="$extras/extra[@uuid = $recordUUID]"/>
 
     <xsl:variable name="isoScopeCode" select="gmd:hierarchyLevel/*/@codeListValue"/>
     <xsl:variable name="resourceType"
@@ -77,25 +79,16 @@
                           then 'dataset'
                           else $isoScopeCode"/>
     
-    <xsl:variable name="uriPattern"
-                  select="geonet:getUriPattern($RecordUUID)"/>
 
-    <xsl:variable name="RecordURI">
-      <xsl:variable name="mURI"
-                    select="replace(replace($uriPattern, '\{resourceType\}', 'records'), '\{resourceUuid\}', $RecordUUID)"/>
-      <xsl:if
-        test="$mURI != ''
-              and (starts-with($mURI, 'http://')
-                   or starts-with($mURI, 'https://'))">
+    <xsl:variable name="recordURI">
+      <xsl:variable name="mURI" select="replace(replace($mdExtra/uriPattern, '\{resourceType\}', 'records'), '\{resourceUuid\}', $recordUUID)"/>
+      <xsl:if test="$mURI != '' and (starts-with($mURI, 'http://') or starts-with($mURI, 'https://'))">
         <xsl:value-of select="geonet:escapeURI($mURI)"/>
       </xsl:if>
     </xsl:variable>
 
-    <xsl:variable name="ResourceUri"
-                  select="geonet:getResourceURI(., $ResourceType, $uriPattern)"/>
 
-    <xsl:if test="$RecordURI">
-      <dcat:record rdf:resource="{$RecordURI}"/>
+    <xsl:variable name="resourceUri" select="$mdExtra/rdfResourceURI"/>
 
     <xsl:if test="$recordURI">
       <dcat:record rdf:resource="{$recordURI}"/>
@@ -111,6 +104,7 @@
 
   <xsl:template match="gmd:MD_Metadata" mode="dcat">
     <xsl:variable name="recordUUID" select="string(gmd:fileIdentifier/gco:CharacterString)"/>
+    <xsl:variable name="mdExtra" select="$extras/extra[@uuid = $recordUUID]"/>
     
     <xsl:variable name="metadataViewUrl" select="concat($catalogUrl, '/catalog.search#/metadata/', gmd:fileIdentifier/gco:CharacterString)"/>
     
@@ -135,22 +129,16 @@
 
     <xsl:variable name="metadataDate" select="geonet:formatRdfDate(gmd:dateStamp/*[1])"/>
     
-    <xsl:variable name="resourceUUID" select="geonet:getresourceUUID(.)"/>
+    <xsl:variable name="resourceUUID" select="geonet:getResourceUUID(.)"/>
 
-    <xsl:variable name="RecordURI">
-      <xsl:variable name="mURI"
-                    select="replace(replace($uriPattern,
-                                '\{resourceType\}', 'records'),
-                                '\{resourceUuid\}', $RecordUUID)"/>
-      <xsl:if
-        test="$mURI != '' and (starts-with($mURI, 'http://') or starts-with($mURI, 'https://'))">
+    <xsl:variable name="recordURI">
+      <xsl:variable name="mURI" select="replace(replace($mdExtra/uriPattern, '\{resourceType\}', 'records'), '\{resourceUuid\}', $recordUUID)"/>
+      <xsl:if test="$mURI != '' and (starts-with($mURI, 'http://') or starts-with($mURI, 'https://'))">
         <xsl:value-of select="geonet:escapeURI($mURI)"/>
       </xsl:if>
     </xsl:variable>
 
-    <xsl:variable name="ResourceUri"
-                  select="geonet:getResourceURI(., $ResourceType, $uriPattern)"/>
-
+    <xsl:variable name="resourceUri" select="$mdExtra/rdfResourceURI"/>
 
 
     <xsl:variable name="resourceTitle">
@@ -533,7 +521,7 @@
                 <xsl:when test="name() = 'gmd:MD_Metadata'">
                   <dcat:servesDataset>
                     <dcat:Dataset
-                      rdf:about="{geonet:getResourceURI(., 'dataset', $datasetUriPattern)}">
+                      rdf:about="{geonet:getResourceURI(., 'dataset', $mdExtra/uriPattern)}">
                       <xsl:variable name="dsIdentifiers">
                         <xsl:for-each
                           select="gmd:identificationInfo[1]/*/gmd:citation/*/gmd:identifier/*">
@@ -647,10 +635,7 @@
           <xsl:for-each select="$relatedServices/*">
             <xsl:choose>
               <xsl:when test="name() = 'gmd:MD_Metadata'">
-                <xsl:variable name="serviceUriPattern"
-                              select="geonet:getUriPattern(gmd:fileIdentifier/gco:CharacterString)"/>
-                <dct:relation
-                  rdf:resource="{geonet:getResourceURI(., 'service', $serviceUriPattern)}"/>
+                <dct:relation rdf:resource="{geonet:getResourceURI(., 'service', $mdExtra/uriPattern)}"/>
               </xsl:when>
               <xsl:when test="name() = 'rdf:RDF'">
                 <dct:relation rdf:resource="{geonet:escapeURI(.//dcat:DataService[1]/@rdf:about)}"/>
@@ -760,10 +745,8 @@
                             string($Protocol),
                             string($Distributors)
                           )))"/>
-                          <xsl:variable name="dURI"
-                                        select="replace(replace($uriPattern, '\{resourceType\}', 'distributions'), '\{resourceUuid\}', $distroUUID)"/>
-                          <xsl:if
-                            test="$dURI != '' and (starts-with($dURI, 'http://') or starts-with($dURI, 'https://'))">
+                          <xsl:variable name="dURI" select="replace(replace($mdExtra/uriPattern, '\{resourceType\}', 'distributions'), '\{resourceUuid\}', $distroUUID)"/>
+                          <xsl:if test="$dURI != '' and (starts-with($dURI, 'http://') or starts-with($dURI, 'https://'))">
                             <xsl:attribute name="rdf:about" select="geonet:escapeURI($dURI)"/>
                           </xsl:if>
                           <dct:identifier>
@@ -813,10 +796,7 @@
                               <xsl:if
                                 test=".//gmd:onLine//gmd:linkage/gmd:URL[starts-with($linkage, tokenize(., '\?')[1])]">
                                 <resourceURI>
-                                  <xsl:variable name="serviceUriPattern"
-                                                select="geonet:getUriPattern(gmd:fileIdentifier/gco:CharacterString)"/>
-                                  <xsl:value-of
-                                    select="geonet:getResourceURI(., 'service', $serviceUriPattern)"/>
+                                  <xsl:value-of select="geonet:getResourceURI(., 'service', $mdExtra/uriPattern)"/>
                                 </resourceURI>
                                 <uuid>
                                   <xsl:value-of select="gmd:fileIdentifier/gco:CharacterString"/>
