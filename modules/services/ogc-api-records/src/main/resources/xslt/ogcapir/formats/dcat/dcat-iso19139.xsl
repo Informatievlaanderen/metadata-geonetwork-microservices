@@ -32,7 +32,6 @@
               encoding="utf-8"/>
 
 
-  <xsl:import href="classpath:xslt/ogcapir/formats/dcat/problems.xsl"/>
   <xsl:include href="classpath:xslt/ogcapir/formats/dcat/tpl-rdf-utils.xsl"/>
   <xsl:include href="classpath:xslt/ogcapir/formats/dcat/tpl-rdf-variables.xsl"/>
 
@@ -72,6 +71,7 @@
 
     <xsl:variable name="recordUUID" select="gmd:fileIdentifier/gco:CharacterString"/>
     <xsl:variable name="mdExtra" select="$extras/extra[@uuid = $recordUUID]"/>
+    <xsl:message select="$mdExtra"/>
 
     <xsl:variable name="isoScopeCode" select="gmd:hierarchyLevel/*/@codeListValue"/>
     <xsl:variable name="resourceType"
