@@ -19,30 +19,4 @@
         https://github.com/GIM-be/core-geonetwork/blob/clients/aiv/main/core/src/main/java/org/fao/geonet/util/XslUtil.java#LL1051C24-L1051C42 -->
   </xsl:function>
 
-  <xsl:function name="geonet:getRelatedDatasets" as="node()?">
-    <xsl:param name="string" as="xs:string"/>
-
-    <!-- TODO:
-        https://github.com/GIM-be/core-geonetwork/blob/clients/aiv/main/core/src/main/java/org/fao/geonet/util/XslUtil.java#L1089 -->
-  </xsl:function>
-
-  <xsl:function name="geonet:getUriPattern">
-    <xsl:param name="string" as="xs:string"/>
-
-    <!-- TODO:
-    if (metadata != null && metadata.getHarvestInfo().isHarvested()) {
-            HarvesterSettingRepository harvesterSetting = context.getBean(HarvesterSettingRepository.class);
-            HarvesterSetting uuidSetting = harvesterSetting.findOneByNameAndValueLike("uuid", metadata.getHarvestInfo().getUuid());
-            if (uuidSetting != null && uuidSetting.getParent() != null) {
-                List<HarvesterSetting> resourceUriPatternSetting = harvesterSetting.findChildrenByName(uuidSetting.getParent().getId(), "resourceUriPattern");
-                if (resourceUriPatternSetting.size() > 0 && StringUtils.isNotEmpty(resourceUriPatternSetting.get(0).getValue())) {
-                    return resourceUriPatternSetting.get(0).getValue();
-                }
-            }
-        }
-    return sm.getValue(Settings.SYSTEM_RESOURCE_PREFIX) + "/{resourceType}/{resourceUuid}";
-     -->
-    <xsl:value-of select="concat($resourcePrefix,
-                                  '{resourceType}/{resourceUuid}')"/>
-  </xsl:function>
 </xsl:stylesheet>

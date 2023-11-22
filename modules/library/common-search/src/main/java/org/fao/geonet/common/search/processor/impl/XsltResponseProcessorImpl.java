@@ -6,6 +6,8 @@
 package org.fao.geonet.common.search.processor.impl;
 
 import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.base.Throwables;
 import java.io.IOException;
@@ -32,6 +34,7 @@ import org.fao.geonet.domain.Metadata;
 import org.fao.geonet.domain.Setting;
 import org.fao.geonet.index.model.dcat2.Namespaces;
 import org.fao.geonet.index.model.gn.IndexRecordFieldNames;
+import org.fao.geonet.index.model.gn.IndexRecordFieldNames.CommonField;
 import org.fao.geonet.repository.MetadataRepository;
 import org.fao.geonet.repository.SettingRepository;
 import org.fao.geonet.utils.Xml;
@@ -235,9 +238,58 @@ public class XsltResponseProcessorImpl extends AbstractResponseProcessor {
     extra.addContent(uriPattern);
 
     var relations = new Element("relations");
-    // TODO
+    doc.get(IndexRecordFieldNames.related).get(IndexRecordFieldNames.datasets).forEach(relDataset -> addExtraRelation(relations, relDataset, "dataset"));
+    doc.get(IndexRecordFieldNames.related).get(IndexRecordFieldNames.services).forEach(relService -> addExtraRelation(relations, relService, "service"));
     extra.addContent(relations);
 
     extras.addContent(extra);
+  }
+
+  private void addExtraRelation(Element relations, JsonNode doc, String type) {
+    var rel = new Element(type);
+
+    var sourceUUID = doc.get(IndexRecordFieldNames.source).get("uuid");
+    JsonNode docUUID = null;
+    if (sourceUUID != null) {
+      docUUID = sourceUUID;
+    } else if (doc.get("_id") != null) {
+      docUUID = doc.get("_id");
+    }
+    if (docUUID != null) {
+      var uuid = new Element("uuid");
+      uuid.setText(docUUID.asText());
+      rel.addContent(uuid);
+    }
+
+    var docLink = doc.get("properties").get("url");
+    if (docLink != null) {
+      var link = new Element("link");
+      link.setText(docLink.asText());
+      rel.addContent(link);
+    }
+
+    var docRdfURI = doc.get(IndexRecordFieldNames.source)
+        .get(IndexRecordFieldNames.rdfResourceIdentifier);
+    if (docRdfURI != null) {
+      var rdfURI = new Element("rdfResourceURI");
+      rdfURI.setText(docRdfURI.asText());
+      rel.addContent(rdfURI);
+    }
+
+    var docResourceCode = doc.get(IndexRecordFieldNames.source).get(IndexRecordFieldNames.resourceIdentifier);
+    if (docResourceCode instanceof ArrayNode && !docResourceCode.isEmpty()) {
+      var code = new Element("resourceCode");
+      code.setText(docResourceCode.get(0).get("code").asText());
+      rel.addContent(code);
+    }
+
+    var docTitle = doc.get(IndexRecordFieldNames.source).get(IndexRecordFieldNames.resourceTitle);
+    if (docTitle != null) {
+      var title = new Element("title");
+      title.setText(docTitle.get(CommonField.defaultText).asText());
+      rel.addContent(title);
+    }
+
+    relations.addContent(rel);
   }
 }

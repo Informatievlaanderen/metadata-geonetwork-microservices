@@ -72,6 +72,7 @@
 
     <xsl:variable name="recordUUID" select="gmd:fileIdentifier/gco:CharacterString"/>
     <xsl:variable name="mdExtra" select="$extras/extra[@uuid = $recordUUID]"/>
+    <xsl:message select="$mdExtra"/>
 
     <xsl:variable name="isoScopeCode" select="gmd:hierarchyLevel/*/@codeListValue"/>
     <xsl:variable name="resourceType"
@@ -483,11 +484,6 @@
       <xsl:choose>
         <!-- Service specific -->
         <xsl:when test="$resourceType = 'service'">
-          <xsl:variable name="relatedDatasetByOperatesOn">
-            <xsl:if test="$relationLookup">
-              <xsl:copy-of select="geonet:getRelatedDatasets($recordUUID)/datasets/*"/>
-            </xsl:if>
-          </xsl:variable>
 
           <!-- Transfer option -->
           <xsl:variable name="distribution" select="gmd:distributionInfo/gmd:MD_Distribution/gmd:transferOptions/gmd:MD_DigitalTransferOptions/gmd:onLine[
@@ -514,47 +510,28 @@
           <xsl:copy-of select="$rightsConstraints"/>
 
           <!-- Coupled resources -->
-          <xsl:if test="$relationLookup and count(gmd:identificationInfo/*/srv:operatesOn) > 0">
-            <xsl:variable name="operatesOn" select="gmd:identificationInfo/*/srv:operatesOn"/>
-            <xsl:for-each select="$relatedDatasetByOperatesOn/*">
-              <xsl:choose>
-                <xsl:when test="name() = 'gmd:MD_Metadata'">
-                  <dcat:servesDataset>
-                    <dcat:Dataset
-                      rdf:about="{geonet:getResourceURI(., 'dataset', $mdExtra/uriPattern)}">
-                      <xsl:variable name="dsIdentifiers">
-                        <xsl:for-each
-                          select="gmd:identificationInfo[1]/*/gmd:citation/*/gmd:identifier/*">
-                          <xsl:choose>
-                            <xsl:when test="gmd:codeSpace/gco:CharacterString/text() != ''">
-                              <xsl:value-of
-                                select="concat(gmd:codeSpace/gco:CharacterString/text(), gmd:code/gco:CharacterString/text())"/>
-                            </xsl:when>
-                            <xsl:otherwise>
-                              <xsl:value-of select="gmd:code/gco:CharacterString/text()"/>
-                            </xsl:otherwise>
-                          </xsl:choose>
-                        </xsl:for-each>
-                      </xsl:variable>
-                      <xsl:variable name="link"
-                                    select="normalize-space($operatesOn[@uuidref = $dsIdentifiers][1]/@xlink:href)"/>
-                      <dct:identifier>
-                        <xsl:value-of select="gmd:fileIdentifier/gco:CharacterString"/>
-                      </dct:identifier>
-                      <dct:title>
-                        <xsl:value-of
-                          select="gmd:identificationInfo/*/gmd:citation/gmd:CI_Citation/gmd:title/gco:CharacterString"/>
-                      </dct:title>
-                      <xsl:if test="$link != ''">
-                        <dct:conformsTo rdf:resource="{$link}"/>
-                      </xsl:if>
-                    </dcat:Dataset>
-                  </dcat:servesDataset>
-                </xsl:when>
-                <xsl:when test="name() = 'rdf:RDF'">
-                  <dct:relation rdf:resource="{geonet:escapeURI(.//dcat:Dataset[1]/@rdf:about)}"/>
-                </xsl:when>
-              </xsl:choose>
+          <xsl:if test="$relationLookup">
+            <xsl:for-each select="$mdExtra/relations/dataset">
+              <dcat:servesDataset>
+                <dcat:Dataset>
+                  <xsl:if test="normalize-space(rdfResourceURI) != ''">
+                    <xsl:attribute name="rdf:about" select="rdfResourceURI"/>
+                  </xsl:if>
+                  <xsl:if test="normalize-space(resourceCode) != ''">
+                    <dct:identifier>
+                      <xsl:value-of select="resourceCode"/>
+                    </dct:identifier>
+                  </xsl:if>
+                  <xsl:if test="normalize-space(title) != ''">
+                    <dct:title xml:lang="nl">
+                      <xsl:value-of select="title"/>
+                    </dct:title>
+                  </xsl:if>
+                  <xsl:if test="normalize-space(link) != ''">
+                    <dct:conformsTo rdf:resource="{link}"/>
+                  </xsl:if>
+                </dcat:Dataset>
+              </dcat:servesDataset>
             </xsl:for-each>
           </xsl:if>
 
@@ -945,7 +922,7 @@
           <xsl:if test="normalize-space($resourceUri) != ''">
             <xsl:attribute name="rdf:about" select="$resourceUri"/>
           </xsl:if>
-          <xsl:if test="geonet:isresourceUUIDGenerated(., $resourceUri) = 'true'">
+          <xsl:if test="geonet:isResourceUUIDGenerated(., $resourceUri) = 'true'">
             <adms:identifier>
               <adms:Identifier>
                 <skos:notation>
