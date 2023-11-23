@@ -46,6 +46,12 @@ public class IndexRecordFieldNames {
   public static final String resolutionScaleDenominator = "resolutionScaleDenominator";
   public static final String resourceType = "resourceType";
 
+  public static final String related = "related";
+  public static final String rdfResourceIdentifier = "rdfResourceIdentifier";
+  public static final String uriPattern = "uriPattern";
+  public static final String datasets = "datasets";
+  public static final String services = "services";
+
   public class Codelists {
 
     public static final String prefix = "cl_";
@@ -66,6 +72,7 @@ public class IndexRecordFieldNames {
 
   public class LinkField {
     public static final String url = "urlObject";
+    public static final String protocol = "protocol";
     public static final String name = "nameObject";
     public static final String description = "descriptionObject";
   }

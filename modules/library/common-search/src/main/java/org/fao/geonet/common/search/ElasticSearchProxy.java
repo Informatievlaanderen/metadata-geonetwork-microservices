@@ -130,6 +130,11 @@ public class ElasticSearchProxy {
   @Value("${gn.index.url}")
   String serverUrl;
 
+  @Getter
+  @Setter
+  @Value("${gn.legacy.url}")
+  private String legacyUrl;
+
   /**
    * Process the ES request adding additional filters for privileges, etc. and returns the ES
    * response.
@@ -258,7 +263,7 @@ public class ElasticSearchProxy {
       boolean addPermissions,
       String selectionBucket) throws Exception {
 
-    String esUrl = getSearchUrl();
+    String esUrl = getRelationSearchUrl();
 
     try {
       URL url = new URL(esUrl);
@@ -398,7 +403,7 @@ public class ElasticSearchProxy {
       boolean addPermissions,
       String selectionBucket) throws Exception {
 
-    String esUrl = getSearchUrl();
+    String esUrl = getRelationSearchUrl();
     try {
       URL url = new URL(esUrl);
 
@@ -667,6 +672,10 @@ public class ElasticSearchProxy {
 
   private String getSearchUrl() {
     return serverUrl + "/" + defaultIndex + "/_search?";
+  }
+
+  private String getRelationSearchUrl() {
+    return legacyUrl + "/srv/api/search/records/_search?relatedType=services&relatedType=datasets";
   }
 
   private UserInfo getUserInfo() {

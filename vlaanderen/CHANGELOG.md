@@ -7,6 +7,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [1.1.1-SNAPSHOT]
+- Fix unmapped `mdcat:status` due to http/https inconsistency in thesaurus and metadata - [pr](https://agiv.visualstudio.com/Metadata/_git/MetadataGeonetworkMicroservices/pullrequest/29881)
+- Implement datasets <> services relation mapping - [pr](https://agiv.visualstudio.com/Metadata/_git/MetadataGeonetworkMicroservices/pullrequest/29881)
+- Fix batch export to dcat_ap_vl format - [pr](https://agiv.visualstudio.com/Metadata/_git/MetadataGeonetworkMicroservices/pullrequest/29881)
 
 ## [1.1.0] - 2023-09-26
 - Merged upstream main branch (4.2.5-1) [PR](https://agiv.visualstudio.com/Metadata/_git/MetadataGeonetworkMicroservices/pullrequest/27231)

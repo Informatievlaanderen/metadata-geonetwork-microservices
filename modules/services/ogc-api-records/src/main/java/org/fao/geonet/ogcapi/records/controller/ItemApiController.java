@@ -216,6 +216,7 @@ public class ItemApiController {
           GnMediaType.APPLICATION_DCAT2_XML_VALUE,
           MediaType.TEXT_HTML_VALUE,
           GnMediaType.APPLICATION_GEOJSON_VALUE,
+          GnMediaType.APPLICATION_DCAT_AP_VL_XML_VALUE
       })
   @ResponseStatus(HttpStatus.OK)
   @ApiResponses(value = {

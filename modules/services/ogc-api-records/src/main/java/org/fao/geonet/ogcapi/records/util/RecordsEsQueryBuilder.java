@@ -42,7 +42,8 @@ public class RecordsEsQueryBuilder {
       "contact", "contactForResource",
       "cl_status",
       "edit", "tag", "changeDate",
-      "createDate", "mainLanguage", "geom", "formats");
+      "createDate", "mainLanguage", "geom", "formats",
+      "rdfResourceIdentifier", "uriPattern");
 
   private static final String SORT_BY_SEPARATOR = ",";
 

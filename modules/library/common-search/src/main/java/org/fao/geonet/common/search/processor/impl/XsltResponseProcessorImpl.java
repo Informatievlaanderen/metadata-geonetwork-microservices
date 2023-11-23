@@ -6,13 +6,15 @@
 package org.fao.geonet.common.search.processor.impl;
 
 import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.base.Throwables;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -21,10 +23,8 @@ import javax.xml.stream.XMLStreamWriter;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import net.sf.saxon.s9api.Processor;
-import net.sf.saxon.s9api.QName;
 import net.sf.saxon.s9api.Serializer;
 import net.sf.saxon.s9api.Serializer.Property;
-import net.sf.saxon.s9api.XdmMap;
 import org.apache.commons.lang.StringUtils;
 import org.fao.geonet.common.search.GnMediaType;
 import org.fao.geonet.common.search.domain.UserInfo;
@@ -34,6 +34,8 @@ import org.fao.geonet.domain.Metadata;
 import org.fao.geonet.domain.Setting;
 import org.fao.geonet.index.model.dcat2.Namespaces;
 import org.fao.geonet.index.model.gn.IndexRecordFieldNames;
+import org.fao.geonet.index.model.gn.IndexRecordFieldNames.CommonField;
+import org.fao.geonet.index.model.gn.IndexRecordFieldNames.LinkField;
 import org.fao.geonet.repository.MetadataRepository;
 import org.fao.geonet.repository.SettingRepository;
 import org.fao.geonet.utils.Xml;
@@ -95,9 +97,17 @@ public class XsltResponseProcessorImpl extends AbstractResponseProcessor {
     JsonParser parser = parserForStream(streamFromServer);
 
     List<Integer> ids = new ArrayList<>();
-    new ResponseParser().matchHits(parser, generator, doc -> ids.add(doc
-            .get(IndexRecordFieldNames.source)
-            .get(IndexRecordFieldNames.id).asInt()), false);
+    var extras = new Element("extras");
+
+    new ResponseParser().matchHits(
+        parser,
+        generator,
+        doc -> {
+          ids.add(doc.get(IndexRecordFieldNames.source).get(IndexRecordFieldNames.id).asInt());
+          addExtraInformation(extras, doc);
+        },
+        false
+    );
 
     List<Metadata> records = metadataRepository.findAllById(ids);
 
@@ -176,6 +186,8 @@ public class XsltResponseProcessorImpl extends AbstractResponseProcessor {
       for (Metadata r : records) {
         allRecords.addContent(r.getXmlData(false));
       }
+
+      root.addContent(extras);
       root.addContent(allRecords);
 
       String xsltFileName =
@@ -210,5 +222,115 @@ public class XsltResponseProcessorImpl extends AbstractResponseProcessor {
   @Override
   public void setTransformation(String acceptHeader) {
     transformation = ACCEPT_FORMATTERS.get(acceptHeader);
+  }
+
+  private void addExtraInformation(Element extras, ObjectNode doc) {
+    var source = doc.get(IndexRecordFieldNames.source);
+
+    if (source.get(IndexRecordFieldNames.uuid) == null) {
+      return;
+    }
+
+    var uuid = source.get(IndexRecordFieldNames.uuid).asText();
+
+    var extra = new Element("extra");
+    extra.setAttribute("uuid", uuid);
+
+    var rdfURI = new Element("rdfResourceURI");
+    rdfURI.setText(source.get(IndexRecordFieldNames.rdfResourceIdentifier).asText());
+    extra.addContent(rdfURI);
+
+    var uriPattern = new Element("uriPattern");
+    var docUriPattern = source.get(IndexRecordFieldNames.uriPattern);
+    if (docUriPattern != null) {
+      uriPattern.setText(docUriPattern.asText());
+      extra.addContent(uriPattern);
+    }
+
+    var relations = new Element("relations");
+    var docDatasets = doc.get(IndexRecordFieldNames.related).get(IndexRecordFieldNames.datasets);
+    if (docDatasets != null) {
+      docDatasets.forEach(relDataset -> addExtraRelation(relations, relDataset, "dataset"));
+    }
+    var docServices = doc.get(IndexRecordFieldNames.related).get(IndexRecordFieldNames.services);
+    if (docServices != null) {
+      docServices.forEach(relService -> addExtraRelation(relations, relService, "service"));
+    }
+    extra.addContent(relations);
+
+    extras.addContent(extra);
+  }
+
+  private void addExtraRelation(Element relations, JsonNode doc, String type) {
+    var rel = new Element(type);
+
+    var sourceUUID = doc.get(IndexRecordFieldNames.source).get("uuid");
+    JsonNode docUUID = null;
+    if (sourceUUID != null) {
+      docUUID = sourceUUID;
+    } else if (doc.get("_id") != null) {
+      docUUID = doc.get("_id");
+    }
+    if (docUUID != null) {
+      var uuid = new Element("uuid");
+      uuid.setText(docUUID.asText());
+      rel.addContent(uuid);
+    }
+
+    var docURL = doc.get("properties").get("url");
+    if (docURL != null) {
+      var url = new Element("url");
+      url.setText(docURL.asText());
+      rel.addContent(url);
+    }
+
+    var docRdfURI = doc.get(IndexRecordFieldNames.source)
+        .get(IndexRecordFieldNames.rdfResourceIdentifier);
+    if (docRdfURI != null) {
+      var rdfURI = new Element("rdfResourceURI");
+      rdfURI.setText(docRdfURI.asText());
+      rel.addContent(rdfURI);
+    }
+
+    var docResourceCode = doc.get(IndexRecordFieldNames.source).get(IndexRecordFieldNames.resourceIdentifier);
+    if (docResourceCode instanceof ArrayNode && !docResourceCode.isEmpty()) {
+      var code = new Element("resourceCode");
+      code.setText(docResourceCode.get(0).get("code").asText());
+      rel.addContent(code);
+    }
+
+    var docTitle = doc.get(IndexRecordFieldNames.source).get(IndexRecordFieldNames.resourceTitle);
+    if (docTitle != null) {
+      var title = new Element("title");
+      title.setText(docTitle.get(CommonField.defaultText).asText());
+      rel.addContent(title);
+    }
+
+    var docLinks = doc.get(IndexRecordFieldNames.source).get(IndexRecordFieldNames.link);
+    if (docLinks instanceof ArrayNode && !docLinks.isEmpty()) {
+      docLinks.forEach(docLink -> {
+        var link = new Element("link");
+
+        var protocol = new Element("protocol");
+        protocol.setText(docLink.get(LinkField.protocol).asText());
+        link.addContent(protocol);
+
+        var u = new Element("url");
+        JsonNode uObj = null;
+        if (docLink.get(LinkField.url) != null) {
+          uObj = docLink.get(LinkField.url).get(CommonField.defaultText);
+        } else if (docLink.get("url") != null) {
+          uObj = docLink.get("url");
+        }
+        if (uObj != null) {
+          u.setText(uObj.asText());
+          link.addContent(u);
+        }
+
+        rel.addContent(link);
+      });
+    }
+
+    relations.addContent(rel);
   }
 }
