@@ -6,24 +6,17 @@
   exclude-result-prefixes="#all"
   version="3.0">
 
-  <xsl:template match="dcat:record|dcat:dataset|dcat:service"
-                mode="dcat-record-reference">
-    <xsl:copy>
-      <xsl:copy-of select="*/@rdf:about"/>
+  <xsl:template mode="dcat-record-reference" match="dcat:record|dcat:dataset|dcat:service">
+    <xsl:copy copy-namespaces="no">
+      <xsl:attribute name="rdf:about" select="string(*/@rdf:about)"/>
     </xsl:copy>
   </xsl:template>
 
-  <xsl:template match="rdf:RDF[dcat:Catalog]|dcat:*"
-                mode="dcat-record-reference">
-    <xsl:apply-templates select="*"
-                         mode="dcat-record-reference"/>
+  <xsl:template mode="dcat-record-reference" match="rdf:RDF[dcat:Catalog]|dcat:*">
+    <xsl:apply-templates select="*" mode="dcat-record-reference"/>
   </xsl:template>
 
-
-  <xsl:template match="rdf:RDF[dcat:Catalog]"
-                mode="dcat"
-                priority="2">
-    <xsl:copy-of select="dcat:Catalog/*
-                          /(dcat:CatalogRecord|dcat:Dataset|dcat:DatasetService)"/>
+  <xsl:template mode="dcat" match="rdf:RDF[dcat:Catalog]" priority="2">
+    <xsl:copy-of select="dcat:Catalog/*/(dcat:CatalogRecord|dcat:Dataset|dcat:DataService)"/>
   </xsl:template>
 </xsl:stylesheet>
