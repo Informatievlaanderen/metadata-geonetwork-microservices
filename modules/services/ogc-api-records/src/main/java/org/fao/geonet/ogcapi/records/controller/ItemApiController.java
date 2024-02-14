@@ -383,6 +383,12 @@ public class ItemApiController {
       boolean isCustomResponse = "rdf:RDF".equals(
           queryResult.getChildNodes().item(0).getNodeName());
       if (isCustomResponse) {
+        if (queryResult.getChildNodes().getLength() == 1) {
+          throw new ResponseStatusException(HttpStatus.NOT_FOUND,
+              messages.getMessage(EXCEPTION_COLLECTION_ITEM_NOT_FOUND,
+                  new String[]{recordId, collectionId},
+                  request.getLocale()));
+        }
         streamResult(response, queryResponse, MediaType.APPLICATION_XML_VALUE);
       } else {
         String total = queryResult.getChildNodes().item(0).getAttributes().getNamedItem("total")
