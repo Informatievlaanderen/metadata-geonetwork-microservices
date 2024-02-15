@@ -41,7 +41,7 @@ stages:
                 - task: AzureCLI@2
                   displayName: Configure access to aks cluster
                   inputs:
-                    azureSubscription: $(devopsServiceConnection)
+                    azureSubscription: ${{ parameters.devopsServiceConnection }}
                     addSpnToEnvironment: true
                     scriptType: bash
                     scriptLocation: inlineScript
