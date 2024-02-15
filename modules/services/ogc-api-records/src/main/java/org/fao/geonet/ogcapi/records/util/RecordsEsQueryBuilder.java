@@ -3,6 +3,7 @@ package org.fao.geonet.ogcapi.records.util;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -92,16 +93,18 @@ public class RecordsEsQueryBuilder {
     SearchSourceBuilder sourceBuilder = new SearchSourceBuilder();
     sourceBuilder.from(startIndex).size(limit);
 
-    if (sortBy != null) {
-      sortBy.forEach(s -> Stream.of(s.split(SORT_BY_SEPARATOR))
-          .forEach(order -> {
-            boolean isDescending = order.startsWith("-");
-            sourceBuilder.sort(
-                new FieldSortBuilder(order.replaceAll("^[\\+-]", ""))
-                    .order(
-                        isDescending ? SortOrder.DESC : SortOrder.ASC));
-          }));
+    if (sortBy == null) {
+      sortBy = Collections.singletonList("uuid");
     }
+
+    sortBy.forEach(s -> Stream.of(s.split(SORT_BY_SEPARATOR))
+        .forEach(order -> {
+          boolean isDescending = order.startsWith("-");
+          sourceBuilder.sort(
+              new FieldSortBuilder(order.replaceAll("^[\\+-]", ""))
+                  .order(
+                      isDescending ? SortOrder.DESC : SortOrder.ASC));
+        }));
 
     Set<String> sources = new HashSet<>(defaultSources);
     if (sourceFields != null) {
