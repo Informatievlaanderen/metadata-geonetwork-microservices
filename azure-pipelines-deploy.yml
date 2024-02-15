@@ -8,76 +8,79 @@ parameters:
   # name of the devops service connection
   - name: devopsServiceConnection
 
-jobs:
-  - deployment: deploy
-    environment: ${{ parameters.namespace }}
-    strategy:
-      runOnce:
-        deploy:
-          steps:
-            - checkout: self
-              displayName: Set up repository
-              submodules: recursive # needed for submodules
-            - task: Bash@3
-              displayName: Set git commit sha as env var
-              inputs:
-                targetType: 'inline'
-                script: |
-                  GIT_COMMIT_SHA=$(git rev-parse HEAD)
-                  echo "GIT_COMMIT_SHA: ${GIT_COMMIT_SHA}"
-                  echo "##vso[task.setvariable variable=GIT_COMMIT_SHA]${GIT_COMMIT_SHA}"
-            - task: Bash@3
-              displayName: Retrieve project version
-              inputs:
-                targetType: 'inline'
-                workingDirectory: 'vlaanderen'
-                script: |
-                  VL_GEONETWORK_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
-                  echo "VL_GEONETWORK_VERSION: ${VL_GEONETWORK_VERSION}"
-                  echo "##vso[task.setvariable variable=VL_GEONETWORK_VERSION]${VL_GEONETWORK_VERSION}"
-            - task: AzureCLI@2
-              displayName: Configure access to aks cluster
-              inputs:
-                azureSubscription: $(devopsServiceConnection)
-                addSpnToEnvironment: true
-                scriptType: bash
-                scriptLocation: inlineScript
-                inlineScript: |
-                  # download kubectl and kubelogin
-                  sudo az aks install-cli --subscription ${{ parameters.subscription }} --client-version latest --kubelogin-version latest --only-show-errors
-                  # download ~/.kube/config file
-                  az aks get-credentials --resource-group ${{ parameters.clusterRg }} --name ${{ parameters.clusterName }} --only-show-errors
-                  # convert ~/.kube/config to a format compatible with kubelogin
-                  kubelogin convert-kubeconfig --login spn
-                  # create secure azure devops variables for later steps
-                  echo "##vso[task.setvariable variable=spnId;isSecret=true]$servicePrincipalId"
-                  echo "##vso[task.setvariable variable=spnSecret;isSecret=true]$servicePrincipalKey"
-            - task: Docker@2
-              displayName: Login to ACR
-              inputs:
-                containerRegistry: 'premdacr'
-                repository: 'metadata/geonetwork'
-                command: 'login'
-            - task: Bash@3
-              displayName: Re-tag docker image
-              inputs:
-                targetType: 'inline'
-                script: |
-                  image=$(ACR).azurecr.io/metadata/gn-cloud-ogc-api-records-service:$GIT_COMMIT_SHA
-                  newimage=$(ACR).azurecr.io/metadata/gn-cloud-ogc-api-records-service:$NAMESPACE
-                  docker pull $image
-                  docker tag $image $newimage
-                  docker push $newimage
-              env:
-                NAMESPACE: ${{ parameters.namespace }}
-                ACR: ${{ parameters.acr }}
-                GIT_COMMIT_SHA: $(GIT_COMMIT_SHA)
-            - task: Bash@3
-              displayName: Rolling restart ($(namespace))
-              env:
-                AAD_SERVICE_PRINCIPAL_CLIENT_ID: $(spnId)
-                AAD_SERVICE_PRINCIPAL_CLIENT_SECRET: $(spnSecret)
-              inputs:
-                targetType: 'inline'
-                script: |
-                  kubectl rollout restart --context $(clusterName) -n $(namespace) deployment/ogc-api-records-service
+stages:
+  - stage: deploy
+    pool: dv-dev-ubuntu2204
+    jobs:
+      - deployment: deploy
+        environment: ${{ parameters.namespace }}
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - checkout: self
+                  displayName: Set up repository
+                  submodules: recursive # needed for submodules
+                - task: Bash@3
+                  displayName: Set git commit sha as env var
+                  inputs:
+                    targetType: 'inline'
+                    script: |
+                      GIT_COMMIT_SHA=$(git rev-parse HEAD)
+                      echo "GIT_COMMIT_SHA: ${GIT_COMMIT_SHA}"
+                      echo "##vso[task.setvariable variable=GIT_COMMIT_SHA]${GIT_COMMIT_SHA}"
+                - task: Bash@3
+                  displayName: Retrieve project version
+                  inputs:
+                    targetType: 'inline'
+                    workingDirectory: 'vlaanderen'
+                    script: |
+                      VL_GEONETWORK_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+                      echo "VL_GEONETWORK_VERSION: ${VL_GEONETWORK_VERSION}"
+                      echo "##vso[task.setvariable variable=VL_GEONETWORK_VERSION]${VL_GEONETWORK_VERSION}"
+                - task: AzureCLI@2
+                  displayName: Configure access to aks cluster
+                  inputs:
+                    azureSubscription: $(devopsServiceConnection)
+                    addSpnToEnvironment: true
+                    scriptType: bash
+                    scriptLocation: inlineScript
+                    inlineScript: |
+                      # download kubectl and kubelogin
+                      sudo az aks install-cli --subscription ${{ parameters.subscription }} --client-version latest --kubelogin-version latest --only-show-errors
+                      # download ~/.kube/config file
+                      az aks get-credentials --resource-group ${{ parameters.clusterRg }} --name ${{ parameters.clusterName }} --only-show-errors
+                      # convert ~/.kube/config to a format compatible with kubelogin
+                      kubelogin convert-kubeconfig --login spn
+                      # create secure azure devops variables for later steps
+                      echo "##vso[task.setvariable variable=spnId;isSecret=true]$servicePrincipalId"
+                      echo "##vso[task.setvariable variable=spnSecret;isSecret=true]$servicePrincipalKey"
+                - task: Docker@2
+                  displayName: Login to ACR
+                  inputs:
+                    containerRegistry: 'premdacr'
+                    repository: 'metadata/geonetwork'
+                    command: 'login'
+                - task: Bash@3
+                  displayName: Re-tag docker image
+                  inputs:
+                    targetType: 'inline'
+                    script: |
+                      image=$(ACR).azurecr.io/metadata/gn-cloud-ogc-api-records-service:$GIT_COMMIT_SHA
+                      newimage=$(ACR).azurecr.io/metadata/gn-cloud-ogc-api-records-service:$NAMESPACE
+                      docker pull $image
+                      docker tag $image $newimage
+                      docker push $newimage
+                  env:
+                    NAMESPACE: ${{ parameters.namespace }}
+                    ACR: ${{ parameters.acr }}
+                    GIT_COMMIT_SHA: $(GIT_COMMIT_SHA)
+                - task: Bash@3
+                  displayName: Rolling restart ($(namespace))
+                  env:
+                    AAD_SERVICE_PRINCIPAL_CLIENT_ID: $(spnId)
+                    AAD_SERVICE_PRINCIPAL_CLIENT_SECRET: $(spnSecret)
+                  inputs:
+                    targetType: 'inline'
+                    script: |
+                      kubectl rollout restart --context $(clusterName) -n $(namespace) deployment/ogc-api-records-service
