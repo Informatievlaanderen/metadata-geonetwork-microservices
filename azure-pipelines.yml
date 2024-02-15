@@ -12,6 +12,8 @@ variables:
     value: $(Pipeline.Workspace)/.m2/repository
   - name: mavenCacheOpts
     value: '-Dmaven.repo.local=$(mavenCacheFolder)'
+  - name: devopsServiceConnection
+    value: 'md-azuredevops-sc'
 
 jobs:
   - job: publish
@@ -22,26 +24,6 @@ jobs:
       - checkout: self
         displayName: Set up repository
         submodules: recursive # needed for submodules
-      - task: AzureCLI@2
-        displayName: Configure access to aks cluster
-        inputs:
-          azureSubscription: 'dvl-dev-infocat-ARM'
-          addSpnToEnvironment: true
-          scriptType: bash
-          scriptLocation: inlineScript
-          inlineScript: |
-            # download kubectl and kubelogin
-            sudo az aks install-cli --subscription ${{ variables.subscription }} --client-version latest --kubelogin-version latest --only-show-errors
-
-            # download ~/.kube/config file
-            az aks get-credentials --resource-group ${{ variables.clusterRg }} --name ${{ variables.clusterName }} --only-show-errors
-
-            # convert ~/.kube/config to a format compatible with kubelogin
-            kubelogin convert-kubeconfig --login spn
-
-            # create secure azure devops variables for later steps
-            echo "##vso[task.setvariable variable=spnId;isSecret=true]$servicePrincipalId"
-            echo "##vso[task.setvariable variable=spnSecret;isSecret=true]$servicePrincipalKey"
       - task: Bash@3
         displayName: Set git commit sha as env var
         inputs:
@@ -50,14 +32,6 @@ jobs:
             GIT_COMMIT_SHA=$(git rev-parse HEAD)
             echo "GIT_COMMIT_SHA: ${GIT_COMMIT_SHA}"
             echo "##vso[task.setvariable variable=GIT_COMMIT_SHA]${GIT_COMMIT_SHA}"
-      - task: Bash@3
-        displayName: Retrieve main version
-        inputs:
-          targetType: 'inline'
-          script: |
-            MAIN_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
-            echo "MAIN_VERSION: ${MAIN_VERSION}"
-            echo "##vso[task.setvariable variable=MAIN_VERSION]${MAIN_VERSION}"
       - task: Bash@3
         displayName: Retrieve vlaanderen version
         inputs:
@@ -87,20 +61,8 @@ jobs:
           testResultsFiles: '**/surefire-reports/TEST-*.xml'
           goals: 'clean install'
           options: ' -Drelax '
-      - task: Bash@3
-        displayName: Retag docker image
-        inputs:
-          targetType: 'inline'
-          script: |
-            localimage=gn-cloud-ogc-api-records-service:$(MAIN_VERSION) 
-            remote=premdacr.azurecr.io/metadata/ogc-api-records-service
-            docker tag $localimage $remote:$(GIT_COMMIT_SHA)
-            docker tag $localimage $remote:$(VL_VERSION)
-            docker tag $localimage $remote:develop
-            docker tag $localimage $remote:latest
-            docker image ls
       - task: Docker@2
-        displayName: Push to preprod container registry (premdacr)
+        displayName: Push to pre container registry (premdacr)
         inputs:
           containerRegistry: 'premdacr'
           repository: 'metadata/ogc-api-records-service'
@@ -110,12 +72,14 @@ jobs:
             $(VL_VERSION)
             develop
             latest
-      - task: Bash@3
-        displayName: Rolling restart of ogc-api-records-service
-        env:
-          AAD_SERVICE_PRINCIPAL_CLIENT_ID: $(spnId)
-          AAD_SERVICE_PRINCIPAL_CLIENT_SECRET: $(spnSecret)
+      - task: Docker@2
+        displayName: Push to prd container registry (prdmdacr)
         inputs:
-          targetType: 'inline'
-          script: |
-            kubectl rollout restart -n dev deployment/ogc-api-records-service
+          containerRegistry: 'prdmdacr'
+          repository: 'metadata/ogc-api-records-service'
+          command: 'push'
+          tags: |
+            $(GIT_COMMIT_SHA)
+            $(VL_VERSION)
+            develop
+            latest

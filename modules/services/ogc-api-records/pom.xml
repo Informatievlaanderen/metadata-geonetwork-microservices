@@ -181,6 +181,10 @@
                   <layers>
                     <enabled>true</enabled>
                   </layers>
+                  <additionalProperties>
+                    <java.source>${java.version}</java.source>
+                    <java.target>${java.version}</java.target>
+                  </additionalProperties>
                 </configuration>
               </execution>
             </executions>
