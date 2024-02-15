@@ -33,6 +33,14 @@ jobs:
             echo "GIT_COMMIT_SHA: ${GIT_COMMIT_SHA}"
             echo "##vso[task.setvariable variable=GIT_COMMIT_SHA]${GIT_COMMIT_SHA}"
       - task: Bash@3
+        displayName: Retrieve main version
+        inputs:
+          targetType: 'inline'
+          script: |
+            MAIN_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+            echo "MAIN_VERSION: ${MAIN_VERSION}"
+            echo "##vso[task.setvariable variable=MAIN_VERSION]${MAIN_VERSION}"
+      - task: Bash@3
         displayName: Retrieve vlaanderen version
         inputs:
           targetType: 'inline'
@@ -61,25 +69,26 @@ jobs:
           testResultsFiles: '**/surefire-reports/TEST-*.xml'
           goals: 'clean install'
           options: ' -Drelax '
-      - task: Docker@2
-        displayName: Push to pre container registry (premdacr)
+      - task: Bash@3
+        displayName: Push docker image to pre
         inputs:
-          containerRegistry: 'premdacr'
-          repository: 'metadata/ogc-api-records-service'
-          command: 'push'
-          tags: |
-            $(GIT_COMMIT_SHA)
-            $(VL_VERSION)
-            develop
-            latest
-      - task: Docker@2
-        displayName: Push to prd container registry (prdmdacr)
+          targetType: 'inline'
+          script: |
+            localimage=gn-cloud-ogc-api-records-service:$(MAIN_VERSION) 
+            remote=premdacr.azurecr.io/metadata/ogc-api-records-service
+            docker tag $localimage $remote:$(GIT_COMMIT_SHA)
+            docker tag $localimage $remote:$(VL_VERSION)
+            docker tag $localimage $remote:develop
+            docker tag $localimage $remote:latest
+            docker push $remote
+      - task: Bash@3
+        displayName: Push docker image to prd
         inputs:
-          containerRegistry: 'prdmdacr'
-          repository: 'metadata/ogc-api-records-service'
-          command: 'push'
-          tags: |
-            $(GIT_COMMIT_SHA)
-            $(VL_VERSION)
-            develop
-            latest
+          targetType: 'inline'
+          script: |
+            localimage=gn-cloud-ogc-api-records-service:$(MAIN_VERSION) 
+            docker tag $localimage $remote:$(GIT_COMMIT_SHA)
+            docker tag $localimage $remote:$(VL_VERSION)
+            docker tag $localimage $remote:develop
+            docker tag $localimage $remote:latest
+            docker push $remote
