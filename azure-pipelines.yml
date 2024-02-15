@@ -87,6 +87,7 @@ jobs:
           targetType: 'inline'
           script: |
             localimage=gn-cloud-ogc-api-records-service:$(MAIN_VERSION) 
+            remote=prdmdacr.azurecr.io/metadata/ogc-api-records-service
             docker tag $localimage $remote:$(GIT_COMMIT_SHA)
             docker tag $localimage $remote:$(VL_VERSION)
             docker tag $localimage $remote:develop
