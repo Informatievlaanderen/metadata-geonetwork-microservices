@@ -66,8 +66,8 @@ stages:
                   inputs:
                     targetType: 'inline'
                     script: |
-                      image=$ACR.azurecr.io/metadata/gn-cloud-ogc-api-records-service:$GIT_COMMIT_SHA
-                      newimage=$ACR.azurecr.io/metadata/gn-cloud-ogc-api-records-service:$NAMESPACE
+                      image=$ACR.azurecr.io/metadata/ogc-api-records-service:$GIT_COMMIT_SHA
+                      newimage=$ACR.azurecr.io/metadata/ogc-api-records-service:$NAMESPACE
                       docker pull $image
                       docker tag $image $newimage
                       docker push $newimage
