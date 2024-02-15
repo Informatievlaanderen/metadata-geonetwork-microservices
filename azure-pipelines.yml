@@ -69,6 +69,12 @@ jobs:
           testResultsFiles: '**/surefire-reports/TEST-*.xml'
           goals: 'clean install'
           options: ' -Drelax '
+      - task: Docker@2
+        displayName: Login to ACR
+        inputs:
+          containerRegistry: 'premdacr'
+          repository: 'metadata/ogc-api-records-service'
+          command: 'login'
       - task: Bash@3
         displayName: Push docker image to pre
         inputs:
@@ -81,6 +87,12 @@ jobs:
             docker tag $localimage $remote:develop
             docker tag $localimage $remote:latest
             docker push $remote
+      - task: Docker@2
+        displayName: Login to ACR
+        inputs:
+          containerRegistry: 'prdmdacr'
+          repository: 'metadata/ogc-api-records-service'
+          command: 'login'
       - task: Bash@3
         displayName: Push docker image to prd
         inputs:
