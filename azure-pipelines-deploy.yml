@@ -68,10 +68,9 @@ stages:
                     script: |
                       image=$ACR.azurecr.io/metadata/ogc-api-records-service:$GIT_COMMIT_SHA
                       newimage=$ACR.azurecr.io/metadata/ogc-api-records-service:$NAMESPACE
-                      
+                      echo "test output"
                       echo "image: $image"
                       echo "newimage: $newimage"
-                      
                       docker pull $image
                       docker tag $image $newimage
                       docker push $newimage
