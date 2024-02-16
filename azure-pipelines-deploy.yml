@@ -73,7 +73,8 @@ stages:
                       echo "newimage: $newimage"
                       docker pull $image
                       docker tag $image $newimage
-                      docker push $newimage
+                      docker push -all-tags $newimage
+                      docker image ls
                   env:
                     NAMESPACE: ${{ parameters.namespace }}
                     ACR: ${{ parameters.acr }}
