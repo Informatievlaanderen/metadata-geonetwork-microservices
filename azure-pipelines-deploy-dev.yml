@@ -1,0 +1,9 @@
+stages:
+  - template: azure-pipelines-deploy.yml
+    parameters:
+      subscription: METADATA-dev
+      clusterRg: pre-md-cluster-rg
+      clusterName: pre-md-cluster-aks
+      namespace: dev
+      acr: premdacr
+      devopsServiceConnection: md-azuredevops-sc
