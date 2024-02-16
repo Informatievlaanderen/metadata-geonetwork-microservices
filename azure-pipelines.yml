@@ -82,15 +82,11 @@ jobs:
           script: |
             localimage=gn-cloud-ogc-api-records-service:$(MAIN_VERSION) 
             remote=premdacr.azurecr.io/metadata/ogc-api-records-service
-            echo "git commit sha: $GIT_COMMIT_SHA"
-            echo "vl version: $VL_VERSION"
-            echo "remote: $remote"
             docker tag $localimage $remote:$(GIT_COMMIT_SHA)
             docker tag $localimage $remote:$(VL_VERSION)
             docker tag $localimage $remote:develop
             docker tag $localimage $remote:latest
             docker push --all-tags $remote
-            docker image ls
       - task: Docker@2
         displayName: Login to ACR
         inputs:
@@ -109,4 +105,3 @@ jobs:
             docker tag $localimage $remote:develop
             docker tag $localimage $remote:latest
             docker push --all-tags $remote
-            docker image ls
