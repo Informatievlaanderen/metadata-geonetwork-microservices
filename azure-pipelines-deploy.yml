@@ -81,11 +81,11 @@ stages:
                     ACR: ${{ parameters.acr }}
                     GIT_COMMIT_SHA: $(GIT_COMMIT_SHA)
                 - task: Bash@3
-                  displayName: Rolling restart ($(namespace))
+                  displayName: Rolling restart (${{ parameters.namespace }})
                   env:
                     AAD_SERVICE_PRINCIPAL_CLIENT_ID: $(spnId)
                     AAD_SERVICE_PRINCIPAL_CLIENT_SECRET: $(spnSecret)
                   inputs:
                     targetType: 'inline'
                     script: |
-                      kubectl rollout restart --context $(clusterName) -n $(namespace) deployment/ogc-api-records-service
+                      kubectl rollout restart --context ${{ parameters.clusterName }} -n ${{ parameters.namespace}} deployment/ogc-api-records-service
