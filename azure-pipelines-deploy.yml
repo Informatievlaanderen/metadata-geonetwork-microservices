@@ -66,15 +66,16 @@ stages:
                   inputs:
                     targetType: 'inline'
                     script: |
-                      image=$ACR.azurecr.io/metadata/ogc-api-records-service:$GIT_COMMIT_SHA
-                      newimage=$ACR.azurecr.io/metadata/ogc-api-records-service:$NAMESPACE
+                      image=$ACR.azurecr.io/metadata/ogc-api-records-service
+                      oldtag=$image:$GIT_COMMIT_SHA
+                      newtag=$image:$NAMESPACE
                       echo "test output"
                       echo "image: $image"
-                      echo "newimage: $newimage"
-                      docker pull $image
-                      docker tag $image $newimage
-                      docker push --all-tags $newimage
-                      docker image ls
+                      echo "oldtag: $oldtag"
+                      echo "newtag: $newtag"
+                      docker pull $oldtag
+                      docker tag $oldtag $newtag
+                      docker push $newtag
                   env:
                     NAMESPACE: ${{ parameters.namespace }}
                     ACR: ${{ parameters.acr }}
