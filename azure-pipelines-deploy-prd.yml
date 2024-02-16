@@ -1,0 +1,9 @@
+stages:
+  - template: azure-pipelines-deploy.yml
+    parameters:
+      subscription: METADATA-productie
+      clusterRg: prd-md-cluster-rg
+      clusterName: prd-md-cluster-aks
+      namespace: prd
+      acr: prdmdacr
+      devopsServiceConnection: md-azuredevops-sc
