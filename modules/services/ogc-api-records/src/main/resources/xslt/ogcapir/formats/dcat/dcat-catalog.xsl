@@ -41,7 +41,7 @@
                 as="xs:string"/>
 
   <xsl:variable name="resourcePrefix"
-                select="'https://metadata.vlaanderen.be/metadatacenter/srv/resources/'"
+                select="'https://metadata.vlaanderen.be/srv/resources/'"
                 as="xs:string"/>
 
   <xsl:template name="langId2toAuth">
@@ -57,11 +57,37 @@
 
 
   <xsl:template match="/root">
-    <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+    <rdf:RDF>
+      <xsl:call-template name="add-namespaces"/>
       <xsl:call-template name="build-catalog"/>
-
       <xsl:apply-templates mode="dcat" select="records/*"/>
     </rdf:RDF>
+  </xsl:template>
+
+  <xsl:template name="add-namespaces">
+    <xsl:namespace name="rdf" select="'http://www.w3.org/1999/02/22-rdf-syntax-ns#'"/>
+    <xsl:namespace name="skos" select="'http://www.w3.org/2004/02/skos/core#'"/>
+    <xsl:namespace name="spdx" select="'http://spdx.org/rdf/terms#'"/>
+    <xsl:namespace name="owl" select="'http://www.w3.org/2002/07/owl#'"/>
+    <xsl:namespace name="adms" select="'http://www.w3.org/ns/adms#'"/>
+    <xsl:namespace name="locn" select="'http://www.w3.org/ns/locn#'"/>
+    <xsl:namespace name="xsi" select="'http://www.w3.org/2001/XMLSchema-instance'"/>
+    <xsl:namespace name="foaf" select="'http://xmlns.com/foaf/0.1/'"/>
+    <xsl:namespace name="dct" select="'http://purl.org/dc/terms/'"/>
+    <xsl:namespace name="vcard" select="'http://www.w3.org/2006/vcard/ns#'"/>
+    <xsl:namespace name="dcat" select="'http://www.w3.org/ns/dcat#'"/>
+    <xsl:namespace name="schema" select="'http://schema.org/'"/>
+    <xsl:namespace name="dc" select="'http://purl.org/dc/elements/1.1/'"/>
+    <xsl:namespace name="dqv" select="'http://www.w3.org/ns/dqv#'"/>
+    <xsl:namespace name="sdmx-attribute" select="'http://purl.org/linked-data/sdmx/2009/attribute#'"/>
+    <xsl:namespace name="prov" select="'http://www.w3.org/ns/prov#'"/>
+    <xsl:namespace name="qudt" select="'http://qudt.org/schema/qudt/'"/>
+    <xsl:namespace name="rdfs" select="'http://www.w3.org/2000/01/rdf-schema#'"/>
+    <xsl:namespace name="vaem" select="'http://www.linkedmodel.org/schema/vaem#'"/>
+    <xsl:namespace name="cnt" select="'http://www.w3.org/2011/content#'"/>
+    <xsl:namespace name="mdcat" select="'https://data.vlaanderen.be/ns/metadata-dcat#'"/>
+    <xsl:namespace name="vlgen" select="'https://data.vlaanderen.be/ns/generiek'"/>
+    <xsl:namespace name="adres" select="'https://data.vlaanderen.be/ns/adres#'"/>
   </xsl:template>
 
 
