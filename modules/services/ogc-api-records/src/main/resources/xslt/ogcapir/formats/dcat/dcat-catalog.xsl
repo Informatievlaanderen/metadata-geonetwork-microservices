@@ -16,6 +16,7 @@
 
   <xsl:output method="xml"
               omit-xml-declaration="yes"
+              indent="yes"
               encoding="utf-8"/>
 
   <xsl:include href="classpath:xslt/ogcapir/formats/dcat/dcat-iso19139.xsl"/>
