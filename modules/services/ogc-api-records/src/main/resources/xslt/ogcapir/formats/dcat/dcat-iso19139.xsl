@@ -782,13 +782,10 @@
                             <xsl:otherwise>
                               <dct:rights>
                                 <dct:RightsStatement>
-                                  <dct:title>Hoewel deze hier niet zijn opgegeven, kunnen er
-                                    voorwaarden verbonden zijn aan de toegang tot en het gebruik van
-                                    deze webservice/API waarmee u toegang kunt krijgen tot de
-                                    gegevens van deze dataset.
-                                    Gelieve de metadata van de betreffende service/API te
-                                    raadplegen, of contact op te nemen met de aanbieder van de de
-                                    gegevensbron of de service/API.
+                                  <dct:title>
+                                    <xsl:text>Hoewel deze hier niet zijn opgegeven, kunnen er voorwaarden verbonden zijn aan de toegang tot en het gebruik van deze webservice/API waarmee u toegang kunt krijgen tot de gegevens van deze dataset.</xsl:text>
+                                    <xsl:text>&#10;</xsl:text>
+                                    <xsl:text>Gelieve de metadata van de betreffende service/API te raadplegen, of contact op te nemen met de aanbieder van de de gegevensbron of de service/API.</xsl:text>
                                   </dct:title>
                                 </dct:RightsStatement>
                               </dct:rights>
