@@ -8,7 +8,7 @@
 
   <xsl:template mode="dcat-record-reference" match="dcat:record|dcat:dataset|dcat:service">
     <xsl:copy copy-namespaces="no">
-      <xsl:attribute name="rdf:about" select="string(*/@rdf:about)"/>
+      <xsl:attribute name="rdf:resource" select="string(*/@rdf:about)"/>
     </xsl:copy>
   </xsl:template>
 
