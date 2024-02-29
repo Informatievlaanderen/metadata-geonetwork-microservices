@@ -19,7 +19,7 @@ jobs:
   - job: publish
     timeoutInMinutes: "60"
     # itss linux build server
-    pool: dv-dev-ubuntu2204
+    pool: dv-prd-ubuntu2204
     steps:
       - checkout: self
         displayName: Set up repository
