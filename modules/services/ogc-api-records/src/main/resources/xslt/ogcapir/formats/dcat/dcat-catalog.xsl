@@ -26,12 +26,12 @@
     <env>
       <system>
         <site>
-          <siteId>2a294fed-b38d-4c48-824f-098f9ec1d239</siteId>
-          <name>Metadatacenter (van Digitaal Vlaanderen)</name>
+          <siteId>c678d0fb-894d-403f-b146-4b96706a1a16</siteId>
+          <name>Metadata Vlaanderen</name>
           <organization>agentschap Digitaal Vlaanderen</organization>
           <organizationMail>digitaal.vlaanderen@vlaanderen.be</organizationMail>
-          <organizationUrl>https://metadata.vlaanderen.be/metadatacenter</organizationUrl>
-          <url>https://metadata.vlaanderen.be/metadatacenter</url>
+          <organizationUrl>https://metadata.vlaanderen.be</organizationUrl>
+          <url>https://metadata.vlaanderen.be</url>
         </site>
       </system>
     </env>

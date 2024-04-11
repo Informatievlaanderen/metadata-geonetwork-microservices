@@ -5,7 +5,7 @@
   <artifactId>geonetworkmicroservices</artifactId>
   <!-- used to indicate vlaanderen-specific versioning -->
   <!-- picked up in azure pipeline, for example, to tag docker images -->
-  <version>1.1.1-SNAPSHOT</version>
+  <version>1.1.2-SNAPSHOT</version>
 
   <properties>
     <!-- don't generate backup pom.xml files when changing them -->
