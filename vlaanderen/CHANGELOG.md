@@ -12,6 +12,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Move most of the XML namespaces alias at the top of the RDF output document - [pr](https://agiv.visualstudio.com/Metadata/_git/MetadataGeonetworkMicroservices/pullrequest/32778)
 - Always add default sorting on UUID - [pr](https://agiv.visualstudio.com/Metadata/_git/MetadataGeonetworkMicroservices/pullrequest/32778)
 - Prettify XML output
+- Fix metadatacenter reference in RDF output - [pr](https://agiv.visualstudio.com/Metadata/_git/MetadataGeonetworkMicroservices/pullrequest/34567)
 
 ## [1.1.1]
 - Fix unmapped `mdcat:status` due to http/https inconsistency in thesaurus and metadata - [pr](https://agiv.visualstudio.com/Metadata/_git/MetadataGeonetworkMicroservices/pullrequest/29881)
