@@ -6,7 +6,10 @@ All notable changes to this project will be documented in this file. These chang
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.1.2-SNAPSHOT]
+## [1.1.3-SNAPSHOT]
+- Merge upstream changes, includes upgrade to Elasticsearch 8 - [pr](https://agiv.visualstudio.com/Metadata/_git/MetadataGeonetworkMicroservices/pullrequest/35325)
+
+## [1.1.2] - 2024-04-30
 - Fix missing native DCAT DataService from RDF output - [pr](https://agiv.visualstudio.com/Metadata/_git/MetadataGeonetworkMicroservices/pullrequest/32778)
 - Return HTTP error when no record found for RDF export, instead of an empty catalog - [pr](https://agiv.visualstudio.com/Metadata/_git/MetadataGeonetworkMicroservices/pullrequest/32778)
 - Move most of the XML namespaces alias at the top of the RDF output document - [pr](https://agiv.visualstudio.com/Metadata/_git/MetadataGeonetworkMicroservices/pullrequest/32778)
@@ -14,7 +17,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Prettify XML output
 - Fix metadatacenter reference in RDF output - [pr](https://agiv.visualstudio.com/Metadata/_git/MetadataGeonetworkMicroservices/pullrequest/34567)
 
-## [1.1.1]
+## [1.1.1] - 2023-11-22
 - Fix unmapped `mdcat:status` due to http/https inconsistency in thesaurus and metadata - [pr](https://agiv.visualstudio.com/Metadata/_git/MetadataGeonetworkMicroservices/pullrequest/29881)
 - Implement datasets <> services relation mapping - [pr](https://agiv.visualstudio.com/Metadata/_git/MetadataGeonetworkMicroservices/pullrequest/29881)
 - Fix batch export to dcat_ap_vl format - [pr](https://agiv.visualstudio.com/Metadata/_git/MetadataGeonetworkMicroservices/pullrequest/29881)
