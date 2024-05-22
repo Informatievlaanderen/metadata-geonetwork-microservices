@@ -8,6 +8,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [1.1.3-SNAPSHOT]
 - Merge upstream changes, includes upgrade to Elasticsearch 8 - [pr](https://agiv.visualstudio.com/Metadata/_git/MetadataGeonetworkMicroservices/pullrequest/35325)
+- Fix for geonetwork-proxied /api/openapi redirect - [pr](https://agiv.visualstudio.com/Metadata/_git/MetadataGeonetworkMicroservices/pullrequest/35866)
 
 ## [1.1.2] - 2024-04-30
 - Fix missing native DCAT DataService from RDF output - [pr](https://agiv.visualstudio.com/Metadata/_git/MetadataGeonetworkMicroservices/pullrequest/32778)
