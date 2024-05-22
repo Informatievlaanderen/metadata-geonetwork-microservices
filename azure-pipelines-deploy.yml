@@ -6,11 +6,12 @@ parameters:
   # name of the acr: premdacr, prdmacr
   - name: acr
   # name of the devops service connection
-  - name: devopsServiceConnection
+  - name: serviceConnection
+  - name: devopsKeyVault
 
 stages:
-  - stage: deploy
-    pool: dv-prd-ubuntu2204
+  - stage: ${{ parameters.namespace }}
+    dependsOn: build
     jobs:
       - deployment: deploy
         environment: ${{ parameters.namespace }}
@@ -41,7 +42,7 @@ stages:
                 - task: AzureCLI@2
                   displayName: Configure access to aks cluster
                   inputs:
-                    azureSubscription: ${{ parameters.devopsServiceConnection }}
+                    azureSubscription: ${{ parameters.serviceConnection }}
                     addSpnToEnvironment: true
                     scriptType: bash
                     scriptLocation: inlineScript
@@ -61,7 +62,7 @@ stages:
                   displayName: Login to ACR
                   inputs:
                     containerRegistry: ${{ parameters.acr }}
-                    repository: 'metadata/geonetwork'
+                    repository: 'metadata/ogc-api-records-service'
                     command: 'login'
                 - task: Bash@3
                   displayName: Re-tag docker image

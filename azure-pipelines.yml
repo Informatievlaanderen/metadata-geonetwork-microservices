@@ -1,107 +1,144 @@
-trigger:
-  - develop
+######
+# INFO
+######
+# - optional stages should be an upcoming feature, instead of having to rely on approval timeouts (https://developercommunity.visualstudio.com/t/manually-triggered-stages-in-yaml-multi-stage-pipe/697467)
 
+######
+# POOL
+######
+pool: dv-prd-ubuntu2204
+
+###########
+# VARIABLES
+###########
 variables:
-  - name: subscription
-    value: METADATA-dev
-  - name: clusterRg
-    value: pre-md-cluster-rg
-  - name: clusterName
-    value: pre-md-cluster-aks
   - name: mavenCacheFolder
     value: $(Pipeline.Workspace)/.m2/repository
   - name: mavenCacheOpts
     value: '-Dmaven.repo.local=$(mavenCacheFolder)'
-  - name: devopsServiceConnection
-    value: 'md-azuredevops-sc'
+  - name: serviceConnection
+    value: md-azuredevops-sc
 
-jobs:
-  - job: publish
-    timeoutInMinutes: "60"
-    # itss linux build server
-    pool: dv-prd-ubuntu2204
-    steps:
-      - checkout: self
-        displayName: Set up repository
-        submodules: recursive # needed for submodules
-      - task: Bash@3
-        displayName: Set git commit sha as env var
-        inputs:
-          targetType: 'inline'
-          script: |
-            GIT_COMMIT_SHA=$(git rev-parse HEAD)
-            echo "GIT_COMMIT_SHA: ${GIT_COMMIT_SHA}"
-            echo "##vso[task.setvariable variable=GIT_COMMIT_SHA]${GIT_COMMIT_SHA}"
-      - task: Bash@3
-        displayName: Retrieve main version
-        inputs:
-          targetType: 'inline'
-          script: |
-            MAIN_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
-            echo "MAIN_VERSION: ${MAIN_VERSION}"
-            echo "##vso[task.setvariable variable=MAIN_VERSION]${MAIN_VERSION}"
-      - task: Bash@3
-        displayName: Retrieve vlaanderen version
-        inputs:
-          targetType: 'inline'
-          workingDirectory: 'vlaanderen'
-          script: |
-            VL_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
-            echo "VL_VERSION: ${VL_VERSION}"
-            echo "##vso[task.setvariable variable=VL_VERSION]${VL_VERSION}"
-      - task: Cache@2
-        inputs:
-          key: 'maven | "$(Agent.OS)" | **/pom.xml'
-          restoreKeys: |
-            maven | "$(Agent.OS)"
-            maven
-          path: $(mavenCacheFolder)
-        displayName: Cache Maven local repo
-      - task: Maven@3
-        displayName: Build project artifacts
-        inputs:
-          mavenPomFile: 'pom.xml'
-          mavenOptions: '-Xmx3072m $(mavenCacheOpts)'
-          javaHomeOption: 'JDKVersion'
-          jdkVersionOption: '1.11'
-          jdkArchitectureOption: 'x64'
-          publishJUnitResults: true
-          testResultsFiles: '**/surefire-reports/TEST-*.xml'
-          goals: 'clean install'
-          options: ' -Drelax '
-      - task: Docker@2
-        displayName: Login to ACR
-        inputs:
-          containerRegistry: 'premdacr'
-          repository: 'metadata/ogc-api-records-service'
-          command: 'login'
-      - task: Bash@3
-        displayName: Push docker image to pre
-        inputs:
-          targetType: 'inline'
-          script: |
-            localimage=gn-cloud-ogc-api-records-service:$(MAIN_VERSION) 
-            remote=premdacr.azurecr.io/metadata/ogc-api-records-service
-            docker tag $localimage $remote:$(GIT_COMMIT_SHA)
-            docker tag $localimage $remote:$(VL_VERSION)
-            docker tag $localimage $remote:develop
-            docker tag $localimage $remote:latest
-            docker push --all-tags $remote
-      - task: Docker@2
-        displayName: Login to ACR
-        inputs:
-          containerRegistry: 'prdmdacr'
-          repository: 'metadata/ogc-api-records-service'
-          command: 'login'
-      - task: Bash@3
-        displayName: Push docker image to prd
-        inputs:
-          targetType: 'inline'
-          script: |
-            localimage=gn-cloud-ogc-api-records-service:$(MAIN_VERSION) 
-            remote=prdmdacr.azurecr.io/metadata/ogc-api-records-service
-            docker tag $localimage $remote:$(GIT_COMMIT_SHA)
-            docker tag $localimage $remote:$(VL_VERSION)
-            docker tag $localimage $remote:develop
-            docker tag $localimage $remote:latest
-            docker push --all-tags $remote
+########
+# STAGES
+########
+stages:
+  - stage: build
+    jobs:
+      - job: build
+        timeoutInMinutes: "60"
+        steps:
+          - checkout: self
+            displayName: Set up repository
+            submodules: recursive # needed for submodules
+          - task: Bash@3
+            displayName: Set git commit sha as env var
+            inputs:
+              targetType: 'inline'
+              script: |
+                GIT_COMMIT_SHA=$(git rev-parse HEAD)
+                echo "GIT_COMMIT_SHA: ${GIT_COMMIT_SHA}"
+                echo "##vso[task.setvariable variable=GIT_COMMIT_SHA]${GIT_COMMIT_SHA}"
+          - task: Bash@3
+            displayName: Retrieve main version
+            inputs:
+              targetType: 'inline'
+              script: |
+                MAIN_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+                echo "MAIN_VERSION: ${MAIN_VERSION}"
+                echo "##vso[task.setvariable variable=MAIN_VERSION]${MAIN_VERSION}"
+          - task: Bash@3
+            displayName: Retrieve vlaanderen version
+            inputs:
+              targetType: 'inline'
+              workingDirectory: 'vlaanderen'
+              script: |
+                VL_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+                echo "VL_VERSION: ${VL_VERSION}"
+                echo "##vso[task.setvariable variable=VL_VERSION]${VL_VERSION}"
+          - task: Cache@2
+            inputs:
+              key: 'maven | "$(Agent.OS)" | **/pom.xml'
+              restoreKeys: |
+                maven | "$(Agent.OS)"
+                maven
+              path: $(mavenCacheFolder)
+            displayName: Cache Maven local repo
+          - task: Maven@3
+            displayName: Build project artifacts
+            inputs:
+              mavenPomFile: 'pom.xml'
+              mavenOptions: '-Xmx3072m $(mavenCacheOpts)'
+              javaHomeOption: 'JDKVersion'
+              jdkVersionOption: '1.11'
+              jdkArchitectureOption: 'x64'
+              publishJUnitResults: true
+              testResultsFiles: '**/surefire-reports/TEST-*.xml'
+              goals: 'clean install'
+              options: ' -Drelax '
+          - task: Docker@2
+            displayName: Login to ACR
+            inputs:
+              containerRegistry: 'premdacr'
+              repository: 'metadata/ogc-api-records-service'
+              command: 'login'
+          - task: Bash@3
+            displayName: Push docker image to pre
+            inputs:
+              targetType: 'inline'
+              script: |
+                localimage=gn-cloud-ogc-api-records-service:$(MAIN_VERSION) 
+                remote=premdacr.azurecr.io/metadata/ogc-api-records-service
+                docker tag $localimage $remote:$(GIT_COMMIT_SHA)
+                docker tag $localimage $remote:$(VL_VERSION)
+                docker tag $localimage $remote:develop
+                docker tag $localimage $remote:latest
+                docker push --all-tags $remote
+          - task: Docker@2
+            displayName: Login to ACR
+            inputs:
+              containerRegistry: 'prdmdacr'
+              repository: 'metadata/ogc-api-records-service'
+              command: 'login'
+          - task: Bash@3
+            displayName: Push docker image to prd
+            inputs:
+              targetType: 'inline'
+              script: |
+                localimage=gn-cloud-ogc-api-records-service:$(MAIN_VERSION) 
+                remote=prdmdacr.azurecr.io/metadata/ogc-api-records-service
+                docker tag $localimage $remote:$(GIT_COMMIT_SHA)
+                docker tag $localimage $remote:$(VL_VERSION)
+                docker tag $localimage $remote:develop
+                docker tag $localimage $remote:latest
+                docker push --all-tags $remote
+
+  - template: azure-pipelines-deploy.yml
+    parameters:
+      subscription: METADATA-dev
+      clusterRg: pre-md-cluster-rg
+      clusterName: pre-md-cluster-aks
+      namespace: dev
+      acr: premdacr
+      serviceConnection: ${{ variables.serviceConnection }}
+      devopsKeyVault: prd-md-devops-kv
+
+  - template: azure-pipelines-deploy.yml
+    parameters:
+      subscription: METADATA-dev
+      clusterRg: pre-md-cluster-rg
+      clusterName: pre-md-cluster-aks
+      namespace: bet
+      acr: premdacr
+      serviceConnection: ${{ variables.serviceConnection }}
+      devopsKeyVault: prd-md-devops-kv
+
+  - template: azure-pipelines-deploy.yml
+    parameters:
+      subscription: METADATA-productie
+      clusterRg: prd-md-cluster-rg
+      clusterName: prd-md-cluster-aks
+      namespace: prd
+      acr: prdmdacr
+      serviceConnection: ${{ variables.serviceConnection }}
+      devopsKeyVault: prd-md-devops-kv
