@@ -6,6 +6,7 @@ import java.util.List;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import org.apache.commons.lang.StringUtils;
 import org.fao.geonet.ogcapi.records.util.MediaTypeUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -28,6 +29,9 @@ public class ApiDocController {
 
   @Value("${springfox.documentation.swaggerUi.baseUrl}")
   String swaggerBaseUrl;
+
+  @Value("${gn.baseUrl}")
+  String gnBaseUrl;
 
   @Autowired
   ServletContext servletContext;
@@ -61,7 +65,11 @@ public class ApiDocController {
       response.getWriter().write(openApiJsonDoc);
       response.getWriter().flush();
     } else {
-      response.sendRedirect(swaggerBaseUrl + "/swagger-ui/");
+      if(StringUtils.isNotBlank(gnBaseUrl)) {
+        response.sendRedirect(gnBaseUrl + swaggerBaseUrl + "/swagger-ui/");
+      } else {
+        response.sendRedirect(swaggerBaseUrl + "/swagger-ui/");
+      }
     }
 
     return null;
