@@ -62,7 +62,7 @@ stages:
                 maven
               path: $(mavenCacheFolder)
             displayName: Cache Maven local repo
-          - task: Maven@3
+          - task: Maven@4
             displayName: Build project artifacts
             inputs:
               mavenPomFile: 'pom.xml'
