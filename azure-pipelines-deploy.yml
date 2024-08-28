@@ -4,7 +4,9 @@ parameters:
   - name: clusterName
   - name: namespace
   # name of the acr: premdacr, prdmacr
-  - name: acr
+  - name: acrName
+  # name of the acr service connection in devops
+  - name: acrServiceConnection
   # name of the devops service connection
   - name: serviceConnection
   - name: devopsKeyVault
@@ -40,7 +42,7 @@ stages:
                       echo "VL_GEONETWORK_VERSION: ${VL_GEONETWORK_VERSION}"
                       echo "##vso[task.setvariable variable=VL_GEONETWORK_VERSION]${VL_GEONETWORK_VERSION}"
                 - task: AzureCLI@2
-                  displayName: Configure access to aks cluster
+                  displayName: Prepare access to AKS cluster
                   inputs:
                     azureSubscription: ${{ parameters.serviceConnection }}
                     addSpnToEnvironment: true
@@ -49,19 +51,18 @@ stages:
                     inlineScript: |
                       # download kubectl and kubelogin
                       sudo az aks install-cli --subscription ${{ parameters.subscription }} --client-version latest --kubelogin-version latest --only-show-errors
-                      # set the right subscription
-                      az account set --subscription ${{ parameters.subscription }}
-                      # download ~/.kube/config file
-                      az aks get-credentials --subscription ${{ parameters.subscription }} --resource-group ${{ parameters.clusterRg }} --name ${{ parameters.clusterName }} --only-show-errors
-                      # convert ~/.kube/config to a format compatible with kubelogin
-                      kubelogin convert-kubeconfig --login spn
-                      # create secure azure devops variables for later steps
-                      echo "##vso[task.setvariable variable=spnId;isSecret=true]$servicePrincipalId"
-                      echo "##vso[task.setvariable variable=spnSecret;isSecret=true]$servicePrincipalKey"
+                - task: Kubernetes@1
+                  displayName: 'Kubernetes Login'
+                  inputs:
+                    connectionType: Azure Resource Manager
+                    azureSubscriptionEndpoint: ${{ parameters.serviceConnection }}
+                    azureResourceGroup: ${{ parameters.clusterRg }}
+                    kubernetesCluster: ${{ parameters.clusterName }}
+                    command: 'login'
                 - task: Docker@2
                   displayName: Login to ACR
                   inputs:
-                    containerRegistry: ${{ parameters.acr }}
+                    containerRegistry: ${{ parameters.acrServiceConnection }}
                     repository: 'metadata/ogc-api-records-service'
                     command: 'login'
                 - task: Bash@3
@@ -77,13 +78,10 @@ stages:
                       docker push $newtag
                   env:
                     NAMESPACE: ${{ parameters.namespace }}
-                    ACR: ${{ parameters.acr }}
+                    ACR: ${{ parameters.acrName }}
                     GIT_COMMIT_SHA: $(GIT_COMMIT_SHA)
                 - task: Bash@3
                   displayName: Rolling restart (${{ parameters.namespace }})
-                  env:
-                    AAD_SERVICE_PRINCIPAL_CLIENT_ID: $(spnId)
-                    AAD_SERVICE_PRINCIPAL_CLIENT_SECRET: $(spnSecret)
                   inputs:
                     targetType: 'inline'
                     script: |
