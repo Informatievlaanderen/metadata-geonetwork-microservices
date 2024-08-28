@@ -16,8 +16,6 @@ variables:
     value: $(Pipeline.Workspace)/.m2/repository
   - name: mavenCacheOpts
     value: '-Dmaven.repo.local=$(mavenCacheFolder)'
-  - name: serviceConnection
-    value: md-azuredevops-sc
 
 ########
 # STAGES
@@ -79,7 +77,7 @@ stages:
           - task: Docker@2
             displayName: Login to ACR
             inputs:
-              containerRegistry: 'premdacr'
+              containerRegistry: pre-md-acr-sc
               repository: 'metadata/ogc-api-records-service'
               command: 'login'
           - task: Bash@3
@@ -97,7 +95,7 @@ stages:
           - task: Docker@2
             displayName: Login to ACR
             inputs:
-              containerRegistry: 'prdmdacr'
+              containerRegistry: prd-md-acr-sc
               repository: 'metadata/ogc-api-records-service'
               command: 'login'
           - task: Bash@3
@@ -119,8 +117,9 @@ stages:
       clusterRg: pre-md-cluster-rg
       clusterName: pre-md-cluster-aks
       namespace: dev
-      acr: premdacr
-      serviceConnection: ${{ variables.serviceConnection }}
+      acrName: premdacr
+      acrServiceConnection: pre-md-acr-sc
+      serviceConnection: pre-md-subscription-sc
       devopsKeyVault: prd-md-devops-kv
 
   - template: azure-pipelines-deploy.yml
@@ -129,8 +128,9 @@ stages:
       clusterRg: pre-md-cluster-rg
       clusterName: pre-md-cluster-aks
       namespace: bet
-      acr: premdacr
-      serviceConnection: ${{ variables.serviceConnection }}
+      acrName: premdacr
+      acrServiceConnection: pre-md-acr-sc
+      serviceConnection: pre-md-subscription-sc
       devopsKeyVault: prd-md-devops-kv
 
   - template: azure-pipelines-deploy.yml
@@ -139,6 +139,7 @@ stages:
       clusterRg: prd-md-cluster-rg
       clusterName: prd-md-cluster-aks
       namespace: prd
-      acr: prdmdacr
-      serviceConnection: ${{ variables.serviceConnection }}
+      acrName: prdmdacr
+      acrServiceConnection: prd-md-acr-sc
+      serviceConnection: prd-md-subscription-sc
       devopsKeyVault: prd-md-devops-kv
