@@ -42,7 +42,7 @@
                 as="xs:string"/>
 
   <xsl:variable name="resourcePrefix"
-                select="'https://metadata.vlaanderen.be/srv/resources/'"
+                select="'https://metadata.vlaanderen.be/srv/resources'"
                 as="xs:string"/>
 
   <xsl:template name="langId2toAuth">
@@ -122,7 +122,7 @@
       </xsl:choose>
     </xsl:variable>
 
-    <dcat:Catalog rdf:about="{$resourcePrefix}catalogs/{$env/system/site/siteId}">
+    <dcat:Catalog rdf:about="{$resourcePrefix}/catalogs/{$env/system/site/siteId}">
       <!-- A name given to the catalog. -->
       <!-- TODO
       No idea why the xml:lang attribute is not in the output
