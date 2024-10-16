@@ -6,10 +6,11 @@ All notable changes to this project will be documented in this file. These chang
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.1.3-SNAPSHOT]
+## [1.1.3] - 2024-10-16
 - Merge upstream changes, includes upgrade to Elasticsearch 8 - [pr](https://agiv.visualstudio.com/Metadata/_git/MetadataGeonetworkMicroservices/pullrequest/35325)
 - Fix for geonetwork-proxied /api/openapi redirect - [pr](https://agiv.visualstudio.com/Metadata/_git/MetadataGeonetworkMicroservices/pullrequest/35866)
 - Double slash in resourcePrefix fixed - [pr](https://agiv.visualstudio.com/Metadata/_git/MetadataGeonetworkMicroservices/pullrequest/38349)
+- Merged upstream main branch (4.4.5-0) [pr](https://agiv.visualstudio.com/Metadata/_git/MetadataGeonetworkMicroservices/pullrequest/39795)
 
 ## [1.1.2] - 2024-04-30
 - Fix missing native DCAT DataService from RDF output - [pr](https://agiv.visualstudio.com/Metadata/_git/MetadataGeonetworkMicroservices/pullrequest/32778)
@@ -25,10 +26,10 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Fix batch export to dcat_ap_vl format - [pr](https://agiv.visualstudio.com/Metadata/_git/MetadataGeonetworkMicroservices/pullrequest/29881)
 
 ## [1.1.0] - 2023-09-26
-- Merged upstream main branch (4.2.5-1) [PR](https://agiv.visualstudio.com/Metadata/_git/MetadataGeonetworkMicroservices/pullrequest/27231)
+- Merged upstream main branch (4.2.5-1) [pr](https://agiv.visualstudio.com/Metadata/_git/MetadataGeonetworkMicroservices/pullrequest/27231)
 
 ## [1.0.4]
-- Bumped geonetwork core dependencies to 4.2.5 (breaking change in Language table) [PR](https://agiv.visualstudio.com/Metadata/_git/MetadataGeonetworkMicroservices/pullrequest/26653)
+- Bumped geonetwork core dependencies to 4.2.5 (breaking change in Language table) [pr](https://agiv.visualstudio.com/Metadata/_git/MetadataGeonetworkMicroservices/pullrequest/26653)
 
 ## [1.0.1] - 2023-06-16
 - Added DCAT-AP-NL support to ogc-api-records-service
