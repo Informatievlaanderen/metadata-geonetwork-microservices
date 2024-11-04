@@ -6,6 +6,9 @@ All notable changes to this project will be documented in this file. These chang
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.4-SNAPSHOT]
+- Fix for multiple ISO `gmd:deliveryPoint` elements - [pr](https://agiv.visualstudio.com/Metadata/_git/MetadataGeonetworkMicroservices/pullrequest/40145)
+
 ## [1.1.3] - 2024-10-16
 - Merge upstream changes, includes upgrade to Elasticsearch 8 - [pr](https://agiv.visualstudio.com/Metadata/_git/MetadataGeonetworkMicroservices/pullrequest/35325)
 - Fix for geonetwork-proxied /api/openapi redirect - [pr](https://agiv.visualstudio.com/Metadata/_git/MetadataGeonetworkMicroservices/pullrequest/35866)
