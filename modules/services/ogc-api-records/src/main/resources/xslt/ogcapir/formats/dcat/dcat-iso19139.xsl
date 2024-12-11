@@ -1634,6 +1634,10 @@
                 test="geonet:urlEquals($scheme, 'metadata.vlaanderen.be/id/GDI-Vlaanderen-Trefwoorden')">
                 <xsl:value-of select="'mdcat:statuut'"/>
               </xsl:when>
+              <xsl:when
+                test="geonet:urlEquals($scheme, 'data.europa.eu/bna/asd487ae75')">
+                <xsl:value-of select="'dcatap:hvdCategory'"/>
+              </xsl:when>
               <xsl:otherwise>
                 <xsl:value-of select="'dct:subject'"/>
               </xsl:otherwise>
