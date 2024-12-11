@@ -2,6 +2,7 @@
 <xsl:stylesheet xmlns:adms="http://www.w3.org/ns/adms#"
                 xmlns:cnt="http://www.w3.org/2011/content#"
                 xmlns:dcat="http://www.w3.org/ns/dcat#"
+                xmlns:dcatap="http://data.europa.eu/r5r/"
                 xmlns:dct="http://purl.org/dc/terms/"
                 xmlns:foaf="http://xmlns.com/foaf/0.1/"
                 xmlns:gco="http://www.isotc211.org/2005/gco"
@@ -178,6 +179,8 @@
         <xsl:copy-of select="$modelLicences/*[1]"/>
       </xsl:if>
     </xsl:variable>
+
+    <xsl:variable name="hvdLicense" select="count(gmd:identificationInfo[1]/*/gmd:descriptiveKeywords/*/gmd:keyword/gmx:Anchor[@xlink:href='http://data.europa.eu/eli/reg_impl/2023/138/oj'])" />
 
     <xsl:variable name="rightsConstraints">
       <xsl:variable name="constraints" select="gmd:identificationInfo[1]/*/gmd:resourceConstraints/*[name() = ('gmd:MD_LegalConstraints', 'gmd:MD_SecurityConstraints')]/gmd:otherConstraints[../gmd:useConstraints or ../gmd:accessConstraints]/*|
@@ -1579,6 +1582,12 @@
           </xsl:call-template>
         </xsl:when>
 
+        <!-- When the HVD legislation is encountered as a free text keyword, add the relevant element -->
+        <xsl:when
+          test="normalize-space($keywordAbout) = 'http://data.europa.eu/eli/reg_impl/2023/138/oj'">
+          <dcatap:applicableLegislation rdf:resource="http://data.europa.eu/eli/reg_impl/2023/138/oj"/>
+        </xsl:when>
+
         <!--Keyword originating from a controlled vocabulary -->
         <xsl:otherwise>
           <xsl:variable name="concept">
@@ -1622,10 +1631,6 @@
               <xsl:when
                 test="geonet:urlEquals($scheme, 'data.vlaanderen.be/id/conceptscheme/MAGDA-categorie')">
                 <xsl:value-of select="'mdcat:MAGDA-categorie'"/>
-              </xsl:when>
-              <xsl:when
-                test="geonet:urlEquals($scheme, 'metadata.vlaanderen.be/id/GDI-Vlaanderen-Trefwoorden')">
-                <xsl:value-of select="'mdcat:statuut'"/>
               </xsl:when>
               <xsl:otherwise>
                 <xsl:value-of select="'dct:subject'"/>
