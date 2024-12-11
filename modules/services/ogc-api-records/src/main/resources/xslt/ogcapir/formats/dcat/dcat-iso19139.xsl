@@ -180,8 +180,6 @@
       </xsl:if>
     </xsl:variable>
 
-    <xsl:variable name="hvdLicense" select="count(gmd:identificationInfo[1]/*/gmd:descriptiveKeywords/*/gmd:keyword/gmx:Anchor[@xlink:href='http://data.europa.eu/eli/reg_impl/2023/138/oj'])" />
-
     <xsl:variable name="rightsConstraints">
       <xsl:variable name="constraints" select="gmd:identificationInfo[1]/*/gmd:resourceConstraints/*[name() = ('gmd:MD_LegalConstraints', 'gmd:MD_SecurityConstraints')]/gmd:otherConstraints[../gmd:useConstraints or ../gmd:accessConstraints]/*|
                                                gmd:identificationInfo[1]/*/gmd:resourceConstraints/*[name() = ('gmd:MD_LegalConstraints', 'gmd:MD_SecurityConstraints')]/gmd:useLimitation[not(../gmd:useConstraints or ../gmd:accessConstraints)]/*"/>
@@ -1570,6 +1568,12 @@
       </xsl:variable>
 
       <xsl:choose>
+        <!-- When the HVD legislation is encountered as a free text keyword, add the relevant element -->
+        <xsl:when
+          test="normalize-space($scheme) = 'http://data.europa.eu/r5r/applicableLegislation' and normalize-space(.) = '2023/138'">
+          <dcatap:applicableLegislation rdf:resource="http://data.europa.eu/eli/reg_impl/2023/138/oj"/>
+        </xsl:when>
+
         <!-- Keywords not originating from any vocabulary -->
         <xsl:when test="normalize-space($keywordAbout) = ''">
           <xsl:if test="normalize-space(gco:CharacterString|gmx:Anchor) != ''">
@@ -1580,12 +1584,6 @@
           <xsl:call-template name="LocalisedString">
             <xsl:with-param name="term">dcat:keyword</xsl:with-param>
           </xsl:call-template>
-        </xsl:when>
-
-        <!-- When the HVD legislation is encountered as a free text keyword, add the relevant element -->
-        <xsl:when
-          test="normalize-space($keywordAbout) = 'http://data.europa.eu/eli/reg_impl/2023/138/oj'">
-          <dcatap:applicableLegislation rdf:resource="http://data.europa.eu/eli/reg_impl/2023/138/oj"/>
         </xsl:when>
 
         <!--Keyword originating from a controlled vocabulary -->
@@ -1631,6 +1629,10 @@
               <xsl:when
                 test="geonet:urlEquals($scheme, 'data.vlaanderen.be/id/conceptscheme/MAGDA-categorie')">
                 <xsl:value-of select="'mdcat:MAGDA-categorie'"/>
+              </xsl:when>
+              <xsl:when
+                test="geonet:urlEquals($scheme, 'metadata.vlaanderen.be/id/GDI-Vlaanderen-Trefwoorden')">
+                <xsl:value-of select="'mdcat:statuut'"/>
               </xsl:when>
               <xsl:otherwise>
                 <xsl:value-of select="'dct:subject'"/>
