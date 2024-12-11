@@ -7,7 +7,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [1.1.5-SNAPSHOT]
-- Added transformation for `dcatap:applicableLegislation` and `dcatap:hvdCategory`, supporting HVD - [pr]()
+- Added transformation for `dcatap:applicableLegislation` and `dcatap:hvdCategory`, supporting HVD - [pr](https://agiv.visualstudio.com/Metadata/_git/MetadataGeonetworkMicroservices/pullrequest/41140)
 
 ## [1.1.4] - 2024-11-05
 - Fix for multiple ISO `gmd:deliveryPoint` elements - [pr](https://agiv.visualstudio.com/Metadata/_git/MetadataGeonetworkMicroservices/pullrequest/40145)
