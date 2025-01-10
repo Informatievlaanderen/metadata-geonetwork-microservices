@@ -45,8 +45,10 @@
                 select="document('classpath:xslt/ogcapir/formats/dcat/thesauri-AIV/theme/httpinspireeceuropaeumetadatacodelistSpatialScope-SpatialScope.rdf')"/>
   <xsl:variable name="GDI-Vlaanderenregios" as="node()?"
                 select="document('classpath:xslt/ogcapir/formats/dcat/thesauri-AIV/theme/GDI-Vlaanderenregions.rdf')"/>
-
-
+  <xsl:variable name="eu-applicable-legislation" as="node()?"
+                select="document('classpath:xslt/ogcapir/formats/dcat/thesauri-AIV/theme/eu-applicable-legislation.rdf')"/>
+  <xsl:variable name="high-value-dataset-category" as="node()?"
+                select="document('classpath:xslt/ogcapir/formats/dcat/thesauri-AIV/theme/high-value-dataset-category.rdf')"/>
 
   <xsl:variable name="thesaurusList" as="node()*">
     <xsl:copy-of select="$featureconcept"/>
@@ -58,6 +60,8 @@
     <xsl:copy-of select="$PriorityDataset"/>
     <xsl:copy-of select="$SpatialScope"/>
     <xsl:copy-of select="$GDI-Vlaanderenregios"/>
+    <xsl:copy-of select="$eu-applicable-legislation"/>
+    <xsl:copy-of select="$high-value-dataset-category"/>
   </xsl:variable>
 
   <xsl:variable name="thesauri">
@@ -65,9 +69,10 @@
       <xsl:variable name="currentDoc" select="."/>
       <thesausus>
         <xsl:attribute name="title"
-                       select="string($currentDoc/rdf:RDF/skos:ConceptScheme/dc:title[1])"/>
+                       select="string($currentDoc/rdf:RDF/(skos:ConceptScheme|rdf:Description[rdf:type/@rdf:resource='http://www.w3.org/2004/02/skos/core#ConceptScheme'])/*:title[1])"/>
         <xsl:attribute name="about"
-                       select="string($currentDoc/rdf:RDF/skos:ConceptScheme/@rdf:about)"/>
+                       select="string($currentDoc/rdf:RDF/(skos:ConceptScheme|rdf:Description[rdf:type/@rdf:resource='http://www.w3.org/2004/02/skos/core#ConceptScheme'])/@rdf:about)"/>
+
         <xsl:for-each select="$currentDoc/rdf:RDF//skos:Concept">
           <xsl:copy copy-namespaces="no">
             <xsl:copy-of select="@*"/>

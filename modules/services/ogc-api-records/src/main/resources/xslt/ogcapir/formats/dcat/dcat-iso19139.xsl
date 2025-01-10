@@ -2,6 +2,7 @@
 <xsl:stylesheet xmlns:adms="http://www.w3.org/ns/adms#"
                 xmlns:cnt="http://www.w3.org/2011/content#"
                 xmlns:dcat="http://www.w3.org/ns/dcat#"
+                xmlns:dcatap="http://data.europa.eu/r5r/"
                 xmlns:dct="http://purl.org/dc/terms/"
                 xmlns:foaf="http://xmlns.com/foaf/0.1/"
                 xmlns:gco="http://www.isotc211.org/2005/gco"
@@ -1567,6 +1568,13 @@
       </xsl:variable>
 
       <xsl:choose>
+        <!-- When the HVD legislation is encountered as a free text keyword, add the relevant element -->
+        <!-- TODO the keyword should originate from a thesaurus and then $scheme would be available for further processing. currently however, a quick & dirty db update was done to add the hvd keywords to the database which doesn't include the thesaurus -->
+        <xsl:when
+          test="normalize-space($keywordAbout) = 'http://data.europa.eu/eli/reg_impl/2023/138/oj'">
+          <dcatap:applicableLegislation rdf:resource="http://data.europa.eu/eli/reg_impl/2023/138/oj"/>
+        </xsl:when>
+
         <!-- Keywords not originating from any vocabulary -->
         <xsl:when test="normalize-space($keywordAbout) = ''">
           <xsl:if test="normalize-space(gco:CharacterString|gmx:Anchor) != ''">
@@ -1626,6 +1634,10 @@
               <xsl:when
                 test="geonet:urlEquals($scheme, 'metadata.vlaanderen.be/id/GDI-Vlaanderen-Trefwoorden')">
                 <xsl:value-of select="'mdcat:statuut'"/>
+              </xsl:when>
+              <xsl:when
+                test="geonet:urlEquals($scheme, 'data.europa.eu/bna/asd487ae75')">
+                <xsl:value-of select="'dcatap:hvdCategory'"/>
               </xsl:when>
               <xsl:otherwise>
                 <xsl:value-of select="'dct:subject'"/>
