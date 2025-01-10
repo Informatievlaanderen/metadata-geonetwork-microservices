@@ -1569,8 +1569,9 @@
 
       <xsl:choose>
         <!-- When the HVD legislation is encountered as a free text keyword, add the relevant element -->
+        <!-- TODO the keyword should originate from a thesaurus and then $scheme would be available for further processing. currently however, a quick & dirty db update was done to add the hvd keywords to the database which doesn't include the thesaurus -->
         <xsl:when
-          test="normalize-space($scheme) = 'http://data.europa.eu/r5r/applicableLegislation' and normalize-space(.) = '2023/138'">
+          test="normalize-space($keywordAbout) = 'http://data.europa.eu/eli/reg_impl/2023/138/oj'">
           <dcatap:applicableLegislation rdf:resource="http://data.europa.eu/eli/reg_impl/2023/138/oj"/>
         </xsl:when>
 
